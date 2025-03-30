@@ -24,10 +24,6 @@ function loadFooter() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    navigateTo("home"); // Carrega a página inicial
-    loadFooter(); // Carrega o footer
-});
-document.addEventListener("DOMContentLoaded", () => {
     navigateTo("home")
     loadFooter()
 });
