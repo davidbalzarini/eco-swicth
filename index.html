@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco Switch</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-left">
+            <button class="menu-btn"><i class="fas fa-bars"></i></button>
+            <img src="./assets/icon-logo.png" alt="Eco Switch" class="logo">
+            <div class="search-container">
+                <input type="text" placeholder="Buscar produtos..." class="search-input" aria-label="Campo de busca">
+                <button class="search-btn" aria-label="Buscar">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+        
+       
+        
+        <div class="navbar-right">
+            <a href="#" onclick="navigateTo('home')">Home</a>
+            <a href="#">Chat</a>
+            <a href="#">Notificações</a>
+            <button class="btn-outline" onclick="navigateTo('register')">Cadastre-se</button>
+            <button class="btn-primary" onclick="navigateTo('login')">Entrar</button>
+        </div>
+    </nav>
+
+    <main id="content">
+
+    </main>
+
+    <div id="footer-container"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
