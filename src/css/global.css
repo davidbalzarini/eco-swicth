@@ -1,0 +1,65 @@
+body, h1, p, input, button {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+:root {
+    --primary-color: #227355;
+    --light-color: #F7F7F7;
+    --dark-color: #030303;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    font-size: 14px;
+    margin: 10px 0 5px;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.btn-outline {
+    background: none;
+    border: 1px solid var(--primary-color);
+    padding: 6px 12px;
+    color: var(--primary-color);
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: var(--light-color);
+    border: none;
+    padding: 6px 12px;
+}
+
+.forgot-password {
+    display: block;
+    font-size: 12px;
+    margin-top: 5px;
+    color: #666;
+    text-align: right;
+    text-decoration: none;
+}
+
+
+@media (max-width: 768px) {
+    .btn-outline, .btn-primary {
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+}

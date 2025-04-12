@@ -1,5 +1,3 @@
-
-  // Exemplo de array de produtos
 const products = [
   { name: "Cadeira de madeira", image: "../public/media/item.png" },
   { name: "Mesa de escritório", image: "https://toribio.com.br/controle/arquivo/p12a-br.jpg" },
@@ -29,7 +27,7 @@ function navigateTo(page) {
 }
 
 function searchProducts() {
-  const term = $(".search-input").val().toLowerCase();
+  const term = document.querySelector(".search-input").value.toLowerCase();
   const filteredProducts = products.filter(product => product.name.toLowerCase().includes(term));
   loadProducts(filteredProducts);
 }
@@ -42,18 +40,35 @@ function loadFooter() {
     });
 }
 
-function loadProducts(list = products){
-  const productList = $("#productList");
+function loadProducts(list = products) {
+  const productList = document.getElementById("productList");
 
-  list.map(item => {
-    const productDiv = $("<div>").addClass("product");
-    const productImg = $("<img>").attr("src", item.image).attr("alt", item.name).addClass("product-image");
-    const productName = $("<p>").text(item.name);
-    const swapButton = $("<button>").text("Solicitar troca").addClass("product")
+  if (!productList) {
+    console.error("Elemento #productList não encontrado.");
+    return;
+  }
+
+  productList.innerHTML = "";
+
+  list.forEach(item => {
+    const productDiv = document.createElement("div");
+    productDiv.classList.add("product");
+
+    const productImg = document.createElement("img");
+    productImg.src = item.image;
+    productImg.alt = item.name;
+    productImg.classList.add("product-image");
+
+    const productName = document.createElement("p");
+    productName.textContent = item.name;
+
+    const swapButton = document.createElement("button");
+    swapButton.textContent = "Solicitar troca";
+    swapButton.classList.add("product-button");
 
     productDiv.append(productImg, productName, swapButton);
-    productList.append(productDiv);
-  })
+    productList.appendChild(productDiv);
+  });
 }
 
 $(document).ready(() => {

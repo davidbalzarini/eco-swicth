@@ -1,0 +1,11 @@
+.info{
+    background-color: #C3DAC8;
+    color: var(--primary-color);
+    margin: 30px 100px;
+    min-height: 50px;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+}
