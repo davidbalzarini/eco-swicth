@@ -1,12 +1,12 @@
 <div class="login-container">
     <div class="login-box">
         <h2>Login</h2>
-        <form>
+        <form onsubmit="handleLogin(event)">
             <label class="negrito">Email</label>
-            <input type="email" placeholder="Digite seu email" class="input" required>
+            <input type="email" placeholder="Digite seu email" class="input" id="login-email" required>
 
             <label class="negrito">Senha</label>
-            <input type="password" placeholder="Digite sua senha" class="input" required>
+            <input type="password" placeholder="Digite sua senha" class="input" id="login-password" required>
             
             <a href="#" class="forgot-password" onclick="navigateTo('insert-token')">Esqueceu sua senha?</a>
 

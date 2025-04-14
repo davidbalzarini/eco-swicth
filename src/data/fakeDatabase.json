@@ -1,0 +1,17 @@
+{
+    "products": [
+      { "id": 1, "name": "Cadeira de madeira", "image": "../public/media/item.png", "category": "Casa e Lazer" },
+      { "id": 2, "name": "Mesa de escritório", "image": "https://toribio.com.br/controle/arquivo/p12a-br.jpg", "category": "Construção" },
+      { "id": 3, "name": "S9 quebrado", "image": "https://th.bing.com/th/id/OIP.e6ER8nfBUcDmVH4TUpfxIAHaFj?rs=1&pid=ImgDetMain", "category": "Eletrônicos" },
+      { "id": 4, "name": "Tênis esportivo", "image": "https://emporioiberio.com/cdn/shop/files/Sd959d3a993c249309175e3ccf0fbaad9d_800x.webp?v=1704380777", "category": "Esportes" },
+      { "id": 5, "name": "Camisa casual", "image": "https://jandare.com/cdn/shop/files/S508dc29e08bf455881adb52e9928a5ebo.webp?v=1719524014", "category": "Moda" }
+    ],
+    "users": [
+      { "id": 1, "name": "João Silva", "email": "joao@gmail.com", "pass": "12345" },
+      { "id": 2, "name": "Maria Oliveira", "email": "maria@gmail.com", "pass": "1234" }
+    ],
+    "feedback": [
+      { "id": 1, "userId": 1, "message": "Ótima plataforma!" },
+      { "id": 2, "userId": 2, "message": "Muito fácil de usar." }
+    ]
+  }

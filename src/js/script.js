@@ -1,30 +1,74 @@
-const products = [
-  { name: "Cadeira de madeira", image: "../public/media/item.png" },
-  { name: "Mesa de escritório", image: "https://toribio.com.br/controle/arquivo/p12a-br.jpg" },
-  { name: "S9 quebrado", image: "https://th.bing.com/th/id/OIP.e6ER8nfBUcDmVH4TUpfxIAHaFj?rs=1&pid=ImgDetMain" },
-  { name: "Cadeira de madeira", image: "../public/media/item.png" },
-  { name: "Mesa de escritório", image: "https://toribio.com.br/controle/arquivo/p12a-br.jpg" },
-  { name: "S9 quebrado", image: "https://th.bing.com/th/id/OIP.e6ER8nfBUcDmVH4TUpfxIAHaFj?rs=1&pid=ImgDetMain" },
-];
+let products = []
+
+const base_url = './src/data/fakeDatabase.json';
+
+
+const state = {
+  logged: false
+}
+
+function setLogged(value){ 
+    state.logged = value;
+    renderUI();
+}
+
+function isLogged(){
+  return state.logged;
+}
+
+async function loginUser(email, password) {
+    const response = await axios.get(base_url);
+    const users = response.data.users;
+    const user = users.find(user => user.email === email && user.pass === password);
+    if(user) {
+        alert("Bem vindo");
+        setLogged(true);
+        navigateTo("home");
+    }
+    else {
+        alert("Email ou senha inválidos");
+    }
+}
+
+function handleLogin(event) {
+  event.preventDefault();
+
+  const email = document.getElementById("login-email").value;
+  const password = document.getElementById("login-password").value;
+
+  loginUser(email, password);
+}
+  
+async function getProducts() {
+  const response = await axios.get(base_url);
+  products = response.data.products;
+  console.log(products);
+  return products;
+}
+
+async function navigateTo(page) {
+  try {
+    const response = await fetch(`pages/${page}.html`);
+    const html = await response.text();
+    document.getElementById("content").innerHTML = html;
+  
+    if (page === "home") {
+      const products = await getProducts(); 
+      loadProducts(products); 
+    }
+  } catch (error) {
+    document.getElementById("content").innerHTML = "<h1>Página não encontrada</h1>";
+    console.error("Erro ao carregar a página:", error);
+  }
+  
+  window.history.pushState({}, "", `/${page}`);
+}
+
 
 function toggleMenu() {
   document.querySelector(".navbar").classList.toggle("active");
 }
 
-function navigateTo(page) {
-  fetch(`pages/${page}.html`)
-    .then(response => response.text())
-    .then(html => {
-      document.getElementById("content").innerHTML = html;
-      if (page === "home") {
-        loadProducts();
-      }
-    })
-    .catch(() => {
-      document.getElementById("content").innerHTML = "<h1>Página não encontrada</h1>";
-    });
-  window.history.pushState({}, "", `/${page}`);
-}
 
 function searchProducts() {
   const term = document.querySelector(".search-input").value.toLowerCase();
@@ -43,12 +87,7 @@ function loadFooter() {
 function loadProducts(list = products) {
   const productList = document.getElementById("productList");
 
-  if (!productList) {
-    console.error("Elemento #productList não encontrado.");
-    return;
-  }
-
-  productList.innerHTML = "";
+  productList.innerHTML = null;
 
   list.forEach(item => {
     const productDiv = document.createElement("div");
@@ -71,7 +110,15 @@ function loadProducts(list = products) {
   });
 }
 
+function renderUI() {
+  const logged = isLogged();
+
+  document.getElementById('login-buttons').style.display = logged ? 'none' : 'block';
+  document.getElementById('logout').style.display = logged ? 'block' : 'none';
+}
+
 $(document).ready(() => {
+  renderUI();
   navigateTo("home");
   loadFooter();
 
