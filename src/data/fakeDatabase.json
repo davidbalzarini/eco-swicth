@@ -1,6 +1,6 @@
 {
     "products": [
-      { "id": 1, "name": "Cadeira de madeira", "image": "../public/media/item.png", "category": "Casa e Lazer" },
+      { "id": 1, "name": "Cadeira de madeira", "image": "https://i.postimg.cc/x1HwBGVt/item.png", "category": "Casa e Lazer" },
       { "id": 2, "name": "Mesa de escritório", "image": "https://toribio.com.br/controle/arquivo/p12a-br.jpg", "category": "Construção" },
       { "id": 3, "name": "S9 quebrado", "image": "https://th.bing.com/th/id/OIP.e6ER8nfBUcDmVH4TUpfxIAHaFj?rs=1&pid=ImgDetMain", "category": "Eletrônicos" },
       { "id": 4, "name": "Tênis esportivo", "image": "https://emporioiberio.com/cdn/shop/files/Sd959d3a993c249309175e3ccf0fbaad9d_800x.webp?v=1704380777", "category": "Esportes" },

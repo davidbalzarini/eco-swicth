@@ -69,6 +69,21 @@ function toggleMenu() {
   document.querySelector(".navbar").classList.toggle("active");
 }
 
+function validatePasswords(event) {
+  event.preventDefault();
+  const password = document.getElementById("password").value;
+  const confirmPassword = document.getElementById("confirm-password").value;
+
+  if (password !== confirmPassword) {
+      alert("As senhas não coincidem. Por favor, verifique."); 
+      return false;
+  }
+  alert("Cadastro realizado com sucesso!");
+  navigateTo("login")
+
+  return true; 
+}
+
 
 function searchProducts() {
   const term = document.querySelector(".search-input").value.toLowerCase();
