@@ -15,4 +15,4 @@
   - jQuery
   - Font Awesome (ícones)
 - **Backend**:
-  - Simulação de dados com JSON (fakeDatabase.json)
+  - PHP e Mysql
