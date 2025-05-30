@@ -1,0 +1,13 @@
+.myproducts{
+    height: 100vh;
+}
+
+.button-container{
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.product-category{
+    font-size: 14px !important
+}
