@@ -22,6 +22,7 @@
 
 .footer-section p,
 .footer-section a {
+    background: var(--primary-color);
     color: var(--light-color);
     text-decoration: none;
     font-size: 14px;
@@ -37,6 +38,7 @@
 }
 
 .footer-logo p {
+    background: var(--primary-color);
     font-size: 12px;
     margin-top: 5px;
 }

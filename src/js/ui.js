@@ -1,4 +1,4 @@
-import { createProduct, deleteProduct, getCategories, getCategoryById, getNotifications, getProducts, hasRequested, switchRequest } from "./api.js";
+import { createProduct, deleteProduct, getCategories, getCategoryById, getMyProducts, getMyProductsPromise, getNotifications, getProducts, hasRequested, switchRequest, updateRequestStatus } from "./api.js";
 import { navigateTo } from "./router.js";
 import { isLogged } from "./state.js";
 
@@ -39,6 +39,7 @@ export function loadCategories(categories) {
 
 export async function loadProducts(list = products, idList = "productList") {
 
+
   if(idList === "myProductList" && !isLogged()){
     alert("Você precisa estar logado para ver seus produtos.");
     navigateTo("login");
@@ -46,6 +47,10 @@ export async function loadProducts(list = products, idList = "productList") {
   }
   
   const productList = document.getElementById(idList);
+  if (!productList) {
+    console.error(`Elemento #${idList} não encontrado no DOM.`);
+    return;
+  }
   productList.innerHTML = "";
   if (idList === "myProductList" && !document.getElementById("buttonContainer")) {
     const divButton = $('<div>')
@@ -56,7 +61,7 @@ export async function loadProducts(list = products, idList = "productList") {
     criarBtn.text("Criar anúncio");
     criarBtn.addClass("product-button");
     criarBtn.click(() => {
-      abrirModal();
+      showCreateProductModal();
     });
     divButton.append(criarBtn);
 
@@ -88,7 +93,9 @@ export async function loadProducts(list = products, idList = "productList") {
       const deleteButton = document.createElement("button");
       deleteButton.textContent = "Deletar produto";
       deleteButton.classList.add("product-button");
-      deleteButton.onclick = () => deleteProduct(item.id);
+      deleteButton.onclick = () => {
+        showDeleteProductModal(item.id);
+      };
 
       productDiv.append(productImg, productName, updateButton, deleteButton);
       productList.appendChild(productDiv);
@@ -101,7 +108,7 @@ export async function loadProducts(list = products, idList = "productList") {
         swapButton.disabled = true;
         } else {
         swapButton.textContent = "Solicitar troca";
-        swapButton.onclick = () => switchRequest(item.id);
+        swapButton.onclick = () => abrirSwapRequestModal(item.id);
         }
       productDiv.append(productImg, productName, swapButton);
       productList.appendChild(productDiv);
@@ -123,17 +130,18 @@ export async function loadProducts(list = products, idList = "productList") {
   }
 }
 
+
+export async function abrirSwapRequestModal(produtoAlvoId) {
+  const meusProdutos = await getMyProductsPromise();
+  showSwapRequestModal(produtoAlvoId, meusProdutos);
+}
+
 export function renderUI() {
   const logged = isLogged();
 
   document.getElementById('login-buttons').style.display = logged ? 'none' : 'block';
   document.getElementById('logout').style.display = logged ? 'block' : 'none';
 }
-
-export function abrirModal() {
-    const modal = document.getElementById("modal-bg");
-    if (modal) modal.style.display = "flex";
-  }
   
   export function fecharModal() {
     const modal = document.getElementById("modal-bg");
@@ -142,10 +150,10 @@ export function abrirModal() {
 
   export async function initModalEvents() {
     const closeBtn = document.getElementById("modal-close");
-    if (closeBtn) closeBtn.onclick = fecharModal;
+    if (closeBtn) closeBtn.onclick = closeModal;
   
     const cancelBtn = document.getElementById("cancelar-modal");
-    if (cancelBtn) cancelBtn.onclick = fecharModal;
+    if (cancelBtn) cancelBtn.onclick = closeModal;
 
     const categories = await getCategories();
     categories.forEach(cat => {
@@ -168,28 +176,394 @@ export function abrirModal() {
         console.log("Imagem:", imagem);
         console.log("Categoria:", categoria);
         createProduct(nome, imagem, userId, categoria);
-        fecharModal();
+        closeModal();
 
       };
     }
   }
 
 
-  export async function renderNotifications() {
+
+function animarTroca(card1) {
+    const notificationCard = card1.closest('.notification-card');
+    const overlay = document.getElementById('swap-overlay');
+
+    const cardRect = notificationCard.getBoundingClientRect();
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
+
+    const cardClone = notificationCard.cloneNode(true);
+    cardClone.style.position = 'absolute';
+    cardClone.style.top = (cardRect.top + scrollTop) + 'px';
+    cardClone.style.left = (cardRect.left + scrollLeft) + 'px';
+    cardClone.style.width = cardRect.width + 'px';
+    cardClone.style.height = cardRect.height + 'px';
+    cardClone.style.margin = 0;
+    cardClone.style.zIndex = 2000;
+    cardClone.style.boxShadow = '0 8px 32px rgba(0,0,0,0.4)';
+
+    document.body.appendChild(cardClone);
+    notificationCard.style.visibility = 'hidden';
+
+    overlay.style.display = 'flex';
+    overlay.classList.add('active');
+    overlay.style.pointerEvents = 'none';
+
+    const sides = cardClone.querySelectorAll('.product-side');
+    const productsRow = cardClone.querySelector('.products-row');
+    const swapButton = cardClone.querySelector('.swap-icon');
+    const swapRect = swapButton.getBoundingClientRect(); 
+
+    const centerX = (swapRect.left + swapRect.width / 2) + scrollLeft;
+    const centerY = (swapRect.top + swapRect.height / 2) + scrollTop;
+
+    sides.forEach(side => {
+      const sideRect = side.getBoundingClientRect();
+      const offsetX = centerX - (sideRect.left + scrollLeft);
+      const offsetY = centerY - (sideRect.top + scrollTop);
+
+      side.style.transformOrigin = `${offsetX}px ${offsetY}px`;
+
+      const sideComputedStyle = window.getComputedStyle(side);
+
+      const inner = document.createElement('div');
+      inner.classList.add('inner-content');
+
+      while (side.firstChild) {
+          inner.appendChild(side.firstChild);
+      }
+      side.appendChild(inner);
+
+      inner.style.width = '100%';
+      inner.style.height = '100%';
+      inner.style.margin = '0';
+      inner.style.padding = '0';
+      inner.style.boxSizing = 'border-box';
+
+      if (sideComputedStyle.textAlign && sideComputedStyle.textAlign !== 'start') {
+          inner.style.textAlign = sideComputedStyle.textAlign;
+      }
+      if (sideComputedStyle.display === 'flex' || sideComputedStyle.display === 'inline-flex') {
+          inner.style.display = 'flex';
+          inner.style.flexDirection = sideComputedStyle.flexDirection;
+          inner.style.alignItems = sideComputedStyle.alignItems;
+          inner.style.justifyContent = sideComputedStyle.justifyContent;
+          if (sideComputedStyle.gap && sideComputedStyle.gap !== 'normal') {
+              inner.style.gap = sideComputedStyle.gap;
+          }
+      } else {
+          if (!inner.style.display) {
+               inner.style.display = 'block';
+          }
+      }
+  });
+
+    const tl = gsap.timeline({
+        onComplete: () => {
+            swapProductSides(productsRow);
+
+            gsap.to(cardClone, {
+                top: cardRect.top + scrollTop, 
+                left: cardRect.left + scrollLeft,
+                scale: 1,
+                duration: 0,
+                ease: "power2.inOut",
+                onComplete: () => {
+                    const realRow = notificationCard.querySelector('.products-row');
+                    swapProductSides(realRow);
+
+                    notificationCard.style.visibility = 'visible';
+                    overlay.style.display = 'none';
+                    overlay.classList.remove('active'); 
+                    cardClone.remove();
+                }
+            });
+        }
+    });
+
+    tl.to(cardClone, {
+        scale: 1.2,
+        duration: 0.5,
+        ease: "power2.inOut"
+    });
+    tl.to(sides, {
+        rotation: 180,
+        duration: 1,
+        ease: "power2.inOut",
+        onUpdate: function() {
+            this.targets().forEach(side => {
+                const inner = side.querySelector('.inner-content');
+                if (inner) {
+                    const parentRotation = gsap.getProperty(side, "rotation");
+                    inner.style.transform = `rotate(${-parentRotation}deg)`;
+                }
+            });
+        }
+    });
+
+    tl.to(cardClone, {
+        scale: 1, 
+        duration: 0.5,
+        ease: "power2.inOut"
+    });
+}
+
+
+
+
+function swapProductSides(productsRow) {
+    const left = productsRow.querySelectorAll('.product-side')[0];
+    const right = productsRow.querySelectorAll('.product-side')[1];
+    const swapIcon = productsRow.querySelector('.swap-icon');
+    productsRow.insertBefore(right, swapIcon);
+    productsRow.appendChild(left);
+}
+
+
+export async function renderNotifications() {
     const notifications = await getNotifications();
     const container = document.getElementById("notificationsList");
     container.innerHTML = "";
+
     if (notifications.length === 0) {
-      container.innerHTML = "<p>Sem notificações.</p>";
-      return;
+        container.innerHTML = "<p>Sem notificações.</p>";
+        return;
     }
-    notifications.forEach(n => {
-      const div = document.createElement("div");
-      div.className = "notification";
-      div.innerHTML = `
-        <strong>${n.requester_name}</strong> solicitou troca do produto <strong>${n.product_name}</strong> em ${new Date(n.created_at).toLocaleString()}
-        <span>Status: ${n.status}</span>
-      `;
-      container.appendChild(div);
+
+    for (let idx = 0; idx < notifications.length; idx++) {
+        const n = notifications[idx];
+        const card = document.createElement("div");
+        card.className = "notification-card";
+        card.id = `notification-card-${idx}`;
+
+        card.innerHTML = (n.status === 'pending') ? `
+            <div class="products-row">
+                <div class="product-side">
+                    <img src="${n.product_image}" alt="${n.product_name}" class="product-img">
+                    <span class="product-label">Seu produto</span>
+                    <span class="product-name">${n.product_name}</span>
+                </div>
+                <div class="swap-icon">
+                    <span>⇄</span>
+                </div>
+                <div class="product-side">
+                    <img src="${n.product_requester_image}" alt="${n.product_requester_name}" class="product-img">
+                    <span class="product-label">Oferecido por ${n.requester_name}</span>
+                    <span class="product-name">${n.product_requester_name}</span>
+                </div>
+            </div>
+            <div class="notification-info">
+                <span class="notification-date">${new Date(n.created_at).toLocaleString()}</span>
+                <span class="notification-status status-${n.status}">
+                    ${n.status === "pending" ? "Pendente" : n.status === "accepted" ? "Aceita" : "Recusada"}
+                </span>
+            </div>
+            <div class="notification-actions">
+              ${n.status === "pending" ? `
+                <button class='accept-btn'>Aceitar</button>
+                <button class='reject-btn'>Reprovar</button>
+              ` : ''}
+            </div>
+        ` : n.status === 'accepted' ? `
+            <div class="products-row">
+                <div class="product-side">
+                    <img src="${n.product_requester_image}" alt="${n.product_requester_name}" class="product-img">
+                    <span class="product-label">Oferecido por ${n.requester_name}</span>
+                    <span class="product-name">${n.product_requester_name}</span>
+                </div>
+                <div class="swap-icon">
+                    <span>⇄</span>
+                </div>
+                <div class="product-side">
+                    <img src="${n.product_image}" alt="${n.product_name}" class="product-img">
+                    <span class="product-label">Seu produto</span>
+                    <span class="product-name">${n.product_name}</span>
+                </div>
+            </div>
+            <div class="notification-info">
+                <span class="notification-date">${new Date(n.created_at).toLocaleString()}</span>
+                <span class="notification-status status-${n.status}">
+                    ${n.status === "pending" ? "Pendente" : n.status === "accepted" ? "Aceita" : "Recusada"}
+                </span>
+            </div>
+            <div class="notification-actions">
+              ${n.status === "pending" ? `
+                <button class='accept-btn'>Aceitar</button>
+                <button class='reject-btn'>Reprovar</button>
+              ` : ''}
+            </div>
+        ` : '';
+
+        const acceptBtn = card.querySelector(".accept-btn");
+        const rejectBtn = card.querySelector(".reject-btn");
+        if (acceptBtn) {
+          acceptBtn.onclick = async () => {
+            const sides = card.querySelectorAll('.product-side');
+            try {
+              await updateRequestStatus(n.request_id, "accepted");
+              animarTroca(sides[0]);
+              await renderNotifications();
+            } catch (e) {
+              alert("Erro ao aceitar troca!");
+            }
+          };
+        }
+        
+        if (rejectBtn) {
+  
+          rejectBtn.onclick = async () => {
+            const sides = card.querySelectorAll('.product-side');
+            try {
+              await updateRequestStatus(n.request_id, "reject");
+              alert("Troca rejeitada!");
+              await renderNotifications();
+            } catch (e) {
+              alert("Erro ao rejeitar troca!");
+            }
+          };
+        }
+
+        container.appendChild(card);
+    };
+}
+
+
+  export function openModal(htmlContent, onOpen = null, onClose = null) {
+    const modalBg = document.getElementById("modal-bg");
+    const modalContent = document.getElementById("modal-content");
+    modalContent.innerHTML = htmlContent;
+    modalBg.style.display = "flex";
+    const closeBtn = modalContent.querySelector(".modal-close");
+    if (closeBtn) closeBtn.onclick = () => closeModal(onClose);
+    if (onOpen) onOpen(modalContent);
+  }
+  
+  export function closeModal(onClose = null) {
+    document.getElementById("modal-bg").style.display = "none";
+    if (onClose) onClose();
+  }
+
+
+  export function showCreateProductModal() {
+    openModal(`
+      <button class="modal-close" title="Fechar">&times;</button>
+      <h3>Criar novo anúncio</h3>
+      <form id="form-anuncio">
+        <!-- campos -->
+        <label>Nome</label><input type="text" id="nome-produto" required>
+        <label>Imagem</label><input type="url" id="imagem-produto" required>
+        <label>Categoria</label>
+        <select id="categoria-produto"></select>
+        <div class="modal-actions">
+          <button type="button" class="cancel">Cancelar</button>
+          <button type="submit" class="submit">Criar</button>
+        </div>
+      </form>
+    `, async (modal) => {
+      const cats = await getCategories();
+      const select = modal.querySelector("#categoria-produto");
+      cats.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat.id;
+        opt.textContent = cat.descricao;
+        select.appendChild(opt);
+      });
+      modal.querySelector(".cancel").onclick = closeModal;
+      modal.querySelector("#form-anuncio").onsubmit = function(e) {
+        e.preventDefault();
+        const nome = modal.querySelector("#nome-produto").value;
+        const imagem = modal.querySelector("#imagem-produto").value;
+        const categoria = modal.querySelector("#categoria-produto").value;
+        const userId = localStorage.getItem("userId");
+        createProduct(nome, imagem, userId, categoria);
+        closeModal();
+      };
+    });
+  }
+
+
+  export function showEditProductModal(produto) {
+    openModal(`
+      <button class="modal-close" title="Fechar">&times;</button>
+      <h3>Alterar produto</h3>
+      <form id="form-anuncio">
+        <label>Nome</label><input type="text" id="nome-produto" value="${produto.name}" required>
+        <label>Imagem</label><input type="url" id="imagem-produto" value="${produto.image}" required>
+        <label>Categoria</label>
+        <select id="categoria-produto"></select>
+        <div class="modal-actions">
+          <button type="button" class="cancel">Cancelar</button>
+          <button type="submit" class="submit">Salvar</button>
+        </div>
+      </form>
+    `, async (modal) => {
+      const cats = await getCategories();
+      const select = modal.querySelector("#categoria-produto");
+      cats.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat.id;
+        opt.textContent = cat.descricao;
+        if (cat.id == produto.category_id) opt.selected = true;
+        select.appendChild(opt);
+      });
+      modal.querySelector(".cancel").onclick = closeModal;
+      modal.querySelector("#form-anuncio").onsubmit = function(e) {
+        e.preventDefault();
+        // adicionar função para alterar produto
+        closeModal();
+      };
+    });
+  }
+
+  export function showDeleteProductModal(productId) {
+    openModal(`
+      <button class="modal-close" title="Fechar">&times;</button>
+      <h3>Tem certeza que deseja apagar o produto?</h3>
+      <form id="form-anuncio">
+        <div class="modal-actions">
+          <button type="button" class="cancel">Cancelar</button>
+          <button type="submit" class="submit">Apagar</button>
+        </div>
+      </form>
+    `, async (modal) => {
+      modal.querySelector(".cancel").onclick = closeModal;
+      modal.querySelector("#form-anuncio").onsubmit = function(e) {
+        e.preventDefault();
+        deleteProduct(productId)
+        closeModal();
+      };
+    });
+  }
+
+
+  export function showSwapRequestModal(produtoAlvo, meusProdutos) {
+    openModal(`
+      <button class="modal-close" title="Fechar">&times;</button>
+      <h3>Escolha um produto para oferecer na troca</h3>
+      <form id="swap-form">
+        <label>Meu produto</label>
+        <select id="meu-produto" required>
+          ${meusProdutos.map(p => `<option value="${p.id}">${p.name}</option>`).join("")}
+        </select>
+        <div class="modal-actions">
+          <button type="button" class="cancel">Cancelar</button>
+          <button type="submit" class="submit">Solicitar</button>
+        </div>
+      </form>
+    `, (modal) => {
+      modal.querySelector(".cancel").onclick = closeModal;
+      modal.querySelector("#swap-form").onsubmit = function(e) {
+        e.preventDefault();
+        const meuProdutoId = modal.querySelector("#meu-produto").value;
+        switchRequest(produtoAlvo, meuProdutoId)
+          .then(() => {
+            alert("Solicitação de troca enviada!");
+          })
+          .catch(err => {
+            console.error("Erro ao solicitar troca:", err);
+            alert("Erro ao solicitar troca. Tente novamente.");
+          });
+        closeModal();
+      };
     });
   }

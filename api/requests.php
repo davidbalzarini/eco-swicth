@@ -33,15 +33,29 @@ if($method === 'POST') {
         exit;
     }
     $productId = intval($data['product_id']);
+    $productRequesterId = intval($data['product_requester_id']);
     $requesterId = intval($_SESSION['user']['id']);
     $createdAt = date('Y-m-d H:i:s');
     $status = 'pending';
     error_log("product_id recebido: " . print_r($productId, true));
-    $result = $conn->query("INSERT INTO requests (product_id, requester_id, created_at, status) VALUES ($productId, $requesterId, '$createdAt', '$status')");
+    $result = $conn->query("INSERT INTO requests (product_id, requester_id, created_at, status, product_requester_id) VALUES ($productId, $requesterId, '$createdAt', '$status', $productRequesterId)");
     if ($result) {
         echo json_encode(['success' => true, 'message' => 'Pedido criado com sucesso']);
     } else {
         echo json_encode(['success' => false, 'message' => 'Erro ao criar pedido']);
+    }
+}
+
+if ($method === 'PUT') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    if (isset($data['request_id']) && isset($data['status'])) {
+        $requestId = intval($data['request_id']);
+        $status = $data['status'];
+        $stmt = $conn->prepare("UPDATE requests SET status=? WHERE id=?");
+        $stmt->bind_param("si", $status, $requestId);
+        $stmt->execute();
+        echo json_encode(['success' => true]);
+        exit;
     }
 }
 

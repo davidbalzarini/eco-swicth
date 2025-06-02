@@ -1,0 +1,30 @@
+<link rel="stylesheet" href="../src/css/modal.css">
+
+<div class="modal-bg" id="modal-bg">
+    <div class="modal">
+      <button class="modal-close" id="modal-close" title="Fechar">&times;</button>
+      <h3 id="titleModal">Criar novo anúncio</h3>
+      <form id="form-anuncio">
+        <label for="nome-produto">Nome do produto</label>
+        <input type="text" id="nome-produto" name="nome" required>
+  
+        <label for="imagem-produto">URL da imagem</label>
+        <input type="url" id="imagem-produto" name="imagem" required>
+  
+        <label for="categoria-produto">Categoria</label>
+        <select id="categoria-produto" name="categoria" required>
+          <option value="">Selecione...</option>
+          <!-- <option value="Moda">Moda</option>
+          <option value="Esportes">Esportes</option>
+          <option value="Eletrônicos">Eletrônicos</option>
+          <option value="Casa e Lazer">Casa e Lazer</option>
+          <option value="Construção">Construção</option> -->
+        </select>
+  
+        <div class="modal-actions">
+          <button type="button" class="cancel" id="cancelar-modal">Cancelar</button>
+          <button type="submit" class="submit">Criar</button>
+        </div>
+      </form>
+    </div>
+  </div>

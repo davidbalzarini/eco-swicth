@@ -8,6 +8,7 @@ export async function navigateTo(page) {
       document.getElementById("content").innerHTML = html;
     
       if (page === "home") {
+        initModalEvents();
         const products = await getProducts(); 
         const categories = await getCategories();
         loadProducts(products); 

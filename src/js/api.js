@@ -273,8 +273,20 @@ export function logout(){
     });
 }
 
+export function getMyProductsPromise() {
+  return new Promise((resolve, reject) => {
+    $.ajax({
+      url: "api/produtos.php/myproducts",
+      type: "GET",
+      dataType: "json",
+      xhrFields: { withCredentials: true },
+      success: resolve,
+      error: reject
+    });
+  });
+}
 
-export function switchRequest(productId){
+export function switchRequest(productId, productRequesterId){
     $.ajax({
         url: "api/requests.php",
         dataType: "json",
@@ -282,7 +294,8 @@ export function switchRequest(productId){
         contentType: "application/json",
         xhrFields: { withCredentials: true },
         data: JSON.stringify({
-            product_id: productId
+            product_id: productId,
+            product_requester_id: productRequesterId 
         }),
         success: function(response) {
             if (response.success) {
@@ -330,6 +343,17 @@ export async function hasRequested(productId) {
         success: resolve,
         error: reject
       });
+    });
+  }
+
+  export function updateRequestStatus(requestId, status) {
+    return $.ajax({
+      url: "api/requests.php",
+      type: "PUT",
+      data: JSON.stringify({ request_id: requestId, status: status }),
+      contentType: "application/json",
+      dataType: "json",
+      xhrFields: { withCredentials: true }
     });
   }
   
