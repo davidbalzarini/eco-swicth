@@ -90,6 +90,23 @@ export async function getProductsPaginated(page = 1, limit = 12) {
   });
 }
 
+export async function getProductById(productId) {
+  return new Promise((resolve, reject) => {
+    $.ajax({
+      url: `api/produtos.php?id=${productId}`, 
+      type: "GET",
+      dataType: "json",
+      success: function(data) {
+        resolve(data);
+        console.log("Produto carregado:", data);
+      },
+      error: function(xhr, status, error) {
+        console.error("Erro ao carregar produto:", error);
+        reject(error);
+      }
+    });
+  });
+}
 
 function toggleMenu() {
   document.querySelector(".navbar").classList.toggle("active");

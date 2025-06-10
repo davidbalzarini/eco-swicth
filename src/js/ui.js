@@ -1,4 +1,4 @@
-import { acceptTrade, cancelarTroca, createProduct, deleteProduct, getCategories, getCategoryById, getMyProducts, getMyProductsPromise, getNotifications, getProducts, getProductsPaginated, hasRequested, marcarTrocaConcluida, switchRequest, updateProduct, updateRequestStatus } from "./api.js";
+import { acceptTrade, cancelarTroca, createProduct, deleteProduct, getCategories, getCategoryById, getMyProducts, getMyProductsPromise, getNotifications, getProducts, getProductsPaginated, hasRequested, marcarTrocaConcluida, switchRequest, updateProduct, updateRequestStatus, getProductById } from "./api.js"; // Add getProductById
 import { navigateTo } from "./router.js";
 import { isLogged } from "./state.js";
 
@@ -158,7 +158,70 @@ export async function loadProducts(list = products, idList = "productList") {
       productDiv.appendChild(categoryDiv);
     }
   }
+
+    for (const item of list) {
+    const productDiv = document.createElement("div");
+    productDiv.classList.add("product");
+
+    // Add click event to navigate to product-detail page
+    productDiv.onclick = () => navigateTo('product-detail', item.id); // Pass item.id
+
+    const productImg = document.createElement("img");
+    productImg.src = item.image + '?v=' + new Date().getTime();
+    productImg.alt = item.name;
+    productImg.classList.add("product-image");
+
+    const productName = document.createElement("p");
+    productName.textContent = item.name;
+
+  
+  }
 }
+
+export async function renderProductDetail(product) {
+    document.getElementById('product-detail-name').textContent = product.name;
+    document.getElementById('product-detail-owner').textContent = "Usuário " + product.user_id; 
+    document.getElementById('product-detail-image').src = product.image + '?v=' + new Date().getTime();
+    document.getElementById('product-detail-usage-time').textContent = product.tempo_uso || 'Não informado'; 
+    document.getElementById('product-detail-condition').textContent = product.estado || 'Não informado'; 
+    document.getElementById('product-detail-includes').textContent = product.acompanha || 'Não informado';
+
+    const requestSwapButton = document.getElementById('request-swap-button');
+    if (isLogged()) {
+        const requested = await hasRequested(product.id);
+        if (requested) {
+            requestSwapButton.textContent = "Já solicitado";
+            requestSwapButton.disabled = true;
+            requestSwapButton.style.backgroundColor = '#ccc';
+            requestSwapButton.style.cursor = 'not-allowed';
+        } else if (product.user_id == localStorage.getItem("userId")) {
+            requestSwapButton.textContent = "É o seu produto";
+            requestSwapButton.disabled = true;
+            requestSwapButton.style.backgroundColor = '#ccc';
+            requestSwapButton.style.cursor = 'not-allowed';
+        }
+        else {
+            requestSwapButton.textContent = "Solicitar troca";
+            requestSwapButton.disabled = false;
+            requestSwapButton.style.backgroundColor = ''; // Reset if previously disabled
+            requestSwapButton.style.cursor = 'pointer';
+            requestSwapButton.onclick = () => abrirSwapRequestModal(product.id);
+        }
+    } else {
+        requestSwapButton.textContent = "Faça login para solicitar troca";
+        requestSwapButton.disabled = true;
+        requestSwapButton.style.backgroundColor = '#ccc';
+        requestSwapButton.style.cursor = 'not-allowed';
+    }
+
+
+    // Load similar products (for now, just reuse the home page product loading but exclude the current product)
+    const allProducts = await getProducts();
+    const similarProducts = allProducts.products.filter(p => p.id !== product.id).slice(0, 4); // Get up to 4 similar products
+    loadProducts(similarProducts, 'similarProductsList');
+}
+
+
 
 
 export async function abrirSwapRequestModal(produtoAlvoId) {

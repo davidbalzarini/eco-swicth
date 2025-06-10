@@ -1,4 +1,56 @@
 <?php
+// eco switch/eco-swicth-main/api/produtos.php
+header('Content-Type: application/json');
+session_start();
+require 'db.php';
+
+$method = $_SERVER['REQUEST_METHOD'];
+$path = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '/';
+
+if ($method === 'GET') {
+    if (isset($_GET['id'])) {
+        $id = intval($_GET['id']);
+        $result = $conn->query("SELECT p.*, u.name as user_name FROM products p JOIN users u ON p.user_id = u.id WHERE p.id=$id");
+        if ($result->num_rows > 0) {
+            $produto = $result->fetch_assoc();
+            // Add static values from the image for demonstration.
+            // In a real application, these would come from the database.
+            $produto['tempo_uso'] = '4 anos';
+            $produto['estado'] = 'Funcionando perfeitamente';
+            $produto['acompanha'] = '1 controle + 1 cartucho (Super Mario World)';
+            echo json_encode($produto);
+        } else {
+            echo json_encode(['error' => 'Produto não encontrado']);
+        }
+        exit;
+    }
+    // ... rest of the existing GET logic for /myproducts and paginated products ...
+    if($path === '/myproducts') {
+        $userId = $_SESSION['user']['id'];
+        $result = $conn->query("SELECT * FROM products WHERE user_id='$userId'");
+        $produtos = [];
+        while ($row = $result->fetch_assoc()) {
+            $produtos[] = $row;
+        }
+        echo json_encode($produtos);
+        exit;
+    }
+
+    $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 12;
+    $offset = isset($_GET['offset']) ? intval($_GET['offset']) : 0;
+
+    $result = $conn->query("SELECT SQL_CALC_FOUND_ROWS * FROM products LIMIT $limit OFFSET $offset");
+    $produtos = [];
+    while ($row = $result->fetch_assoc()) {
+        $produtos[] = $row;
+    }
+    $totalResult = $conn->query("SELECT FOUND_ROWS() as total");
+    $total = $totalResult->fetch_assoc()['total'];
+    echo json_encode(['products' => $produtos, 'total' => $total]);
+    exit;
+}
+
+
 header('Content-Type: application/json');
 session_start();
 require 'db.php';
