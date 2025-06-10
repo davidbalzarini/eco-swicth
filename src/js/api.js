@@ -1,5 +1,5 @@
 import { setLogged } from "./state.js";
-import { loadProducts } from "./ui.js";
+import { closeChat, loadProducts, loadUserConversations, openChat } from "./ui.js";
 
 let products = []
 
@@ -16,11 +16,15 @@ export async function loginUser(email, password) {
     success: function(response) {
       if (response.success) {
         console.log(response);
-        alert(response.message);
+       // alert(response.message);
+        //showToast("Sucesso", response.message);
+      
         setLogged(true);
         navigateTo("home");
       } else {
+        //showToast("Erro", "Email ou senha inválidos");
         alert("Email ou senha inválidos");
+
       }
     },
   })
@@ -73,6 +77,19 @@ export async function getProducts() {
   });
 }
 
+export async function getProductsPaginated(page = 1, limit = 12) {
+  const offset = (page - 1) * limit;
+  return new Promise((resolve, reject) => {
+    $.ajax({
+      url: `api/produtos.php?limit=${limit}&offset=${offset}`,
+      type: "GET",
+      dataType: "json",
+      success: resolve,
+      error: reject
+    });
+  });
+}
+
 
 function toggleMenu() {
   document.querySelector(".navbar").classList.toggle("active");
@@ -92,10 +109,12 @@ export function confirmResgister(event){
     success: function(response) {
       if (response.success) {
         alert(response.message);
+        //showToast("Sucesso", response.message);
         console.log(response);
         navigateTo("login");
       } else {
         alert("Erro ao confirmar registro. Tente novamente.");
+        //showToast("Erro", "Erro ao confirmar registro. Tente novamente.");
       }
     },
   })
@@ -106,10 +125,10 @@ export function validatePasswords(event) {
   const password = document.getElementById("password").value;
   const confirmPassword = document.getElementById("confirm-password").value;
 
-  if (password !== confirmPassword) {
-      alert("As senhas não coincidem. Por favor, verifique."); 
-      return;
-  }
+  // if (password !== confirmPassword) {
+  //     alert("As senhas não coincidem. Por favor, verifique."); 
+  //     return;
+  // }
   $.ajax({
     url: "api/auth.php/register",
     type: "POST",
@@ -118,20 +137,24 @@ export function validatePasswords(event) {
     data: JSON.stringify ({
       name: document.getElementById("name-register").value,
       email: document.getElementById("email-register").value,
-      pass: password
+      pass: password,
+      repeat_pass: confirmPassword
     }),
     success: function(response) {
       if (response.success) {
         alert(response.message);
+        //showToast("Sucesso", response.message);
         console.log(response);
         navigateTo("confirm-register")
       } else {
-        alert("Erro ao cadastrar usuário. Tente novamente.");
+        alert(response.message);
+        //showToast("Erro", "Erro ao cadastrar usuário. Tente novamente.");
       }
     },
     error: function(xhr, status, error) {
       console.error("Erro ao cadastrar usuário:", error);
       alert("Erro ao cadastrar usuário. Tente novamente.");
+      //showToast("Erro", "Erro ao cadastrar usuário. Tente novamente.");
     }
   })
 }
@@ -196,34 +219,54 @@ export function checkLoginStatus() {
   });
 }
 
-export function createProduct(name, image, user_id, category_id){
+export function createProduct(formData) {
     $.ajax({
         url: "api/produtos.php",
         type: "POST",
-        dataType: "json",
-        contentType: "application/json",
-        data: JSON.stringify({
-            name: name,
-            image: image,
-            user_id: user_id,
-            category_id: category_id
-        }),
+        processData: false,
+        contentType: false,
+        data: formData,
         xhrFields: { withCredentials: true },
         success: function(response) {
             if (response.success) {
                 console.log("Produto criado com sucesso:", response);
                 alert("Produto criado com sucesso!");
+                //showToast("Sucesso", "Produto criado com sucesso!");
                 getMyProducts();
             } else {
                 alert("Erro ao criar produto.");
+                //showToast("Erro", "Erro ao criar produto.");
             }
             console.log(response);
         },
         error: function(xhr, status, error) {
             console.error("Erro ao criar produto:", error);
             alert("Erro ao criar produto.");
+            //showToast("Erro", "Erro ao criar produto.");
         }
     });
+}
+
+export function updateProduct(formData) {
+  $.ajax({
+    url: "api/produtos.php",
+    type: "POST",
+    processData: false,
+    contentType: false,
+    data: formData,
+    xhrFields: { withCredentials: true },
+    success: function(response) {
+      if (response.success) {
+        alert("Produto atualizado com sucesso!");
+        getMyProducts();
+      } else {
+        alert("Erro ao atualizar produto.");
+      }
+    },
+    error: function(xhr, status, error) {
+      alert("Erro ao atualizar produto.");
+    }
+  });
 }
 
 export function deleteProduct(productId) {
@@ -237,14 +280,17 @@ export function deleteProduct(productId) {
         if (response.success) {
             console.log("Produto deletado com sucesso:", response);
             alert("Produto deletado com sucesso!");
+            //showToast("Sucesso", "Produto deletado com sucesso!");
             getMyProducts();
         } else {
             alert("Erro ao deletar produto.");
+            //showToast("Erro", "Erro ao deletar produto.");
         }
         },
         error: function(xhr, status, error) {
         console.error("Erro ao deletar produto:", error);
         alert("Erro ao deletar produto.");
+        //showToast("Erro", "Erro ao deletar produto.");
         }
     });
 }
@@ -263,12 +309,14 @@ export function logout(){
                 navigateTo("home");
             } else {
                 alert("Erro ao deslogar usuário.");
+                //showToast("Erro", "Erro ao deslogar usuário.");
                 console.error("Erro ao deslogar usuário:", response);
             }
         },
         error: function(xhr, status, error) {
             console.error("Erro ao deslogar usuário:", error);
             alert("Erro ao deslogar usuário.");
+            //showToast("Erro", "Erro ao deslogar usuário.");
         }
     });
 }
@@ -301,9 +349,11 @@ export function switchRequest(productId, productRequesterId){
             if (response.success) {
                 console.log("Requisição switch bem sucedida:", response);
                 alert("Requisição switch bem sucedida!");
+                //showToast("Sucesso", "Requisição switch bem sucedida!");
                 navigateTo("home");
             } else {
                 alert("Erro ao realizar requisição switch.");
+                //showToast("Erro", "Erro ao realizar requisição switch.");
             }
             console.log(response)
         },
@@ -311,6 +361,7 @@ export function switchRequest(productId, productRequesterId){
         error: function(xhr, status, error) {
             console.error("Erro ao realizar requisição switch:", error);
             alert("Erro ao realizar requisição switch.");
+            //showToast("Erro", "Erro ao realizar requisição switch.");
         }
     })
 }
@@ -357,3 +408,50 @@ export async function hasRequested(productId) {
     });
   }
   
+  
+  export async function acceptTrade(tradeId) {
+    const res = await fetch('api/chat/accept_trade.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ trade_id: tradeId })
+    });
+    const data = await res.json();
+    if (data.success) {
+      return data
+    }
+  }
+
+
+  export async function marcarTrocaConcluida(conversationId) {
+    const res = await fetch('api/concluir_troca.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ conversation_id: conversationId })
+    });
+    const data = await res.json();
+    if (data.finalizado) {
+      alert("Troca concluída por ambos! Conversa e produtos removidos.");
+      closeChat();
+      loadUserConversations();
+    } else {
+      alert("Você marcou como concluída. Aguarde o outro usuário.");
+    }
+  }
+
+  export async function cancelarTroca(conversationId) {
+    const res = await fetch('api/cancelar_troca.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ conversation_id: conversationId })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert("Troca cancelada! Conversa, e solicitação removidos.");
+      closeChat();
+      loadUserConversations();
+    } else {
+      alert("Erro ao cancelar troca.");
+    }
+  }

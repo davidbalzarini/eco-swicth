@@ -1,2 +1,4 @@
 /vendor
 .env
+/chat-server/node_modules
+/chat-server/.env

@@ -39,7 +39,7 @@
     width: 150px;
     background: var(--light-color);
     border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: 10px;
     padding: 10px;
 }
 

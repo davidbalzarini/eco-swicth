@@ -1,4 +1,4 @@
-import { createProduct, deleteProduct, getCategories, getCategoryById, getMyProducts, getMyProductsPromise, getNotifications, getProducts, hasRequested, switchRequest, updateRequestStatus } from "./api.js";
+import { acceptTrade, cancelarTroca, createProduct, deleteProduct, getCategories, getCategoryById, getMyProducts, getMyProductsPromise, getNotifications, getProducts, getProductsPaginated, hasRequested, marcarTrocaConcluida, switchRequest, updateProduct, updateRequestStatus } from "./api.js";
 import { navigateTo } from "./router.js";
 import { isLogged } from "./state.js";
 
@@ -13,7 +13,7 @@ function toggleMenu() {
 export async function searchProducts() {
     const term = document.querySelector(".search-input").value.toLowerCase();
     const products = await getProducts(); 
-    const filteredProducts = products.filter(product => product.name.toLowerCase().includes(term));
+    const filteredProducts = products.products.filter(product => product.name.toLowerCase().includes(term));
     loadProducts(filteredProducts);
   }
 
@@ -37,11 +37,38 @@ export function loadCategories(categories) {
   });
 }
 
+export async function renderHomeWithPagination(page = 1, limit = 12) {
+  const data = await getProductsPaginated(page, limit);
+  const products = data.products || data;
+  const total = data.total || products.length;
+
+  loadProducts(products, "productList");
+
+  const totalPages = Math.ceil(total / limit);
+  const paginationDiv = document.getElementById("pagination") || document.createElement("div");
+  paginationDiv.id = "pagination";
+  paginationDiv.innerHTML = "";
+
+  for (let i = 1; i <= totalPages; i++) {
+    const btn = document.createElement("button");
+    btn.textContent = i;
+    btn.className = (i === page) ? "active" : "";
+    btn.onclick = () => renderHomeWithPagination(i, limit);
+    paginationDiv.appendChild(btn);
+  }
+
+  const productList = document.getElementById("productList");
+  if (productList && !document.getElementById("pagination")) {
+    productList.parentNode.appendChild(paginationDiv);
+  }
+}
+
 export async function loadProducts(list = products, idList = "productList") {
 
 
   if(idList === "myProductList" && !isLogged()){
     alert("Você precisa estar logado para ver seus produtos.");
+    //showToast("Atenção", "Você precisa estar logado para ver seus produtos.");
     navigateTo("login");
     return;
   }
@@ -78,7 +105,7 @@ export async function loadProducts(list = products, idList = "productList") {
     productDiv.classList.add("product");
 
     const productImg = document.createElement("img");
-    productImg.src = item.image;
+    productImg.src = item.image + '?v=' + new Date().getTime();
     productImg.alt = item.name;
     productImg.classList.add("product-image");
 
@@ -89,6 +116,9 @@ export async function loadProducts(list = products, idList = "productList") {
       const updateButton = document.createElement("button");
       updateButton.textContent = "Alterar produto";
       updateButton.classList.add("product-button");
+      updateButton.onclick = () => {
+        showEditProductModal(item);
+      }
 
       const deleteButton = document.createElement("button");
       deleteButton.textContent = "Deletar produto";
@@ -171,11 +201,13 @@ export function renderUI() {
         const imagem = document.getElementById("imagem-produto").value;
         const categoria = document.getElementById("categoria-produto").value;
         const userId = localStorage.getItem("userId");
-        console.log("User ID:", userId);
-        console.log("Nome:", nome);
-        console.log("Imagem:", imagem);
-        console.log("Categoria:", categoria);
-        createProduct(nome, imagem, userId, categoria);
+        const formData = new FormData();
+        formData.append("name", nome);
+        formData.append("category_id", categoria);
+        formData.append("user_id", userId);
+        const imagemInput = document.getElementById("imagem-produto");
+
+        createProduct(formData);
         closeModal();
 
       };
@@ -321,12 +353,19 @@ function swapProductSides(productsRow) {
 
 
 export async function renderNotifications() {
+  if (!isLogged()) {
+    navigateTo("login");
+    alert("Você precisa estar logado para ver suas notificações.");
+    //showToast("Atenção", "Você precisa estar logado para ver suas notificações.");
+    
+    return;
+  }
     const notifications = await getNotifications();
     const container = document.getElementById("notificationsList");
     container.innerHTML = "";
 
     if (notifications.length === 0) {
-        container.innerHTML = "<p>Sem notificações.</p>";
+        container.innerHTML = `<p style="text-align:center;margin:40px 0;font-size:1.1em;color:#888;">Sem notificações</p>`;
         return;
     }
 
@@ -400,11 +439,20 @@ export async function renderNotifications() {
           acceptBtn.onclick = async () => {
             const sides = card.querySelectorAll('.product-side');
             try {
+              const data = await acceptTrade(n.request_id);
               await updateRequestStatus(n.request_id, "accepted");
               animarTroca(sides[0]);
               await renderNotifications();
+              console.log("Troca aceita:", data);
+              await new Promise(resolve => setTimeout(resolve, 4000));
+              if (data && data.conversation_id) {
+                await navigateTo('chat');
+                openChat(data.conversation_id);
+              }
             } catch (e) {
               alert("Erro ao aceitar troca!");
+              //showToast("Erro", "Erro ao aceitar troca!");
+              console.error("Erro ao aceitar troca:", e);
             }
           };
         }
@@ -416,9 +464,11 @@ export async function renderNotifications() {
             try {
               await updateRequestStatus(n.request_id, "reject");
               alert("Troca rejeitada!");
+              //showToast("", "Troca rejeitada!");
               await renderNotifications();
             } catch (e) {
               alert("Erro ao rejeitar troca!");
+              //showToast("Erro", "Erro ao rejeitar troca!");
             }
           };
         }
@@ -451,7 +501,7 @@ export async function renderNotifications() {
       <form id="form-anuncio">
         <!-- campos -->
         <label>Nome</label><input type="text" id="nome-produto" required>
-        <label>Imagem</label><input type="url" id="imagem-produto" required>
+        <label>Imagem</label><input type="file"  id="imagem-produto" accept="image/*" required>
         <label>Categoria</label>
         <select id="categoria-produto"></select>
         <div class="modal-actions">
@@ -472,10 +522,17 @@ export async function renderNotifications() {
       modal.querySelector("#form-anuncio").onsubmit = function(e) {
         e.preventDefault();
         const nome = modal.querySelector("#nome-produto").value;
-        const imagem = modal.querySelector("#imagem-produto").value;
+        const imagemInput = modal.querySelector("#imagem-produto");
         const categoria = modal.querySelector("#categoria-produto").value;
         const userId = localStorage.getItem("userId");
-        createProduct(nome, imagem, userId, categoria);
+        
+        const formData = new FormData();
+        formData.append("name", nome);
+        formData.append("category_id", categoria);
+        formData.append("user_id", userId);
+        formData.append("image", imagemInput.files[0]);
+
+        createProduct(formData);
         closeModal();
       };
     });
@@ -488,7 +545,7 @@ export async function renderNotifications() {
       <h3>Alterar produto</h3>
       <form id="form-anuncio">
         <label>Nome</label><input type="text" id="nome-produto" value="${produto.name}" required>
-        <label>Imagem</label><input type="url" id="imagem-produto" value="${produto.image}" required>
+        <label>Imagem</label><input type="file" id="imagem-produto" accept="image/*">
         <label>Categoria</label>
         <select id="categoria-produto"></select>
         <div class="modal-actions">
@@ -509,7 +566,19 @@ export async function renderNotifications() {
       modal.querySelector(".cancel").onclick = closeModal;
       modal.querySelector("#form-anuncio").onsubmit = function(e) {
         e.preventDefault();
-        // adicionar função para alterar produto
+        const nome = modal.querySelector("#nome-produto").value;
+        const imagemInput = modal.querySelector("#imagem-produto");
+        const categoria = modal.querySelector("#categoria-produto").value;
+  
+        const formData = new FormData();
+        formData.append("id", produto.id);
+        formData.append("name", nome);
+        formData.append("category_id", categoria);
+        if (imagemInput.files.length > 0) {
+          formData.append("image", imagemInput.files[0]);
+        }
+  
+        updateProduct(formData);
         closeModal();
       };
     });
@@ -558,12 +627,162 @@ export async function renderNotifications() {
         switchRequest(produtoAlvo, meuProdutoId)
           .then(() => {
             alert("Solicitação de troca enviada!");
+            //showToast("Sucesso", "Solicitação de troca enviada!");
           })
           .catch(err => {
             console.error("Erro ao solicitar troca:", err);
             alert("Erro ao solicitar troca. Tente novamente.");
+            //showToast("Erro", "Erro ao solicitar troca. Tente novamente.");
           });
         closeModal();
       };
+    });
+  }
+
+
+
+
+
+
+  //chat:
+
+  let socket;
+  let currentConversationId = null;
+  
+  export function openChat(conversationId, userId) {
+
+    document.getElementById('btn-concluir-troca').onclick = async function() {
+      if (confirm("Tem certeza que deseja marcar a troca como concluída?")) {
+        await marcarTrocaConcluida(conversationId);
+      }
+    };
+    document.getElementById('btn-cancelar-troca').onclick = async function() {
+      if (confirm("Tem certeza que deseja cancelar a troca? Isso apagará a conversa e os produtos.")) {
+        await cancelarTroca(conversationId);
+
+      }
+    };
+    currentConversationId = conversationId;
+    document.getElementById('chat-modal').style.display = 'flex';
+  
+    $.getJSON(`api/chat/load_messages.php?conversation_id=${conversationId}&last_id=0`, function(data) {
+      document.getElementById('chat-messages').innerHTML = '';
+      if (data.messages) {
+        data.messages.forEach(addMessageToChat);
+      }
+    });
+    if (!socket) {
+      socket = io('http://localhost:3001');
+      socket.on('connect', () => console.log('Conectado ao servidor de chat'));
+      socket.on('connect_error', (err) => console.error('Erro de conexão:', err));
+    }
+
+
+
+    console.log("Emitindo join", conversationId);
+  
+    socket.emit('join', conversationId);
+  
+    socket.off('chat_message');
+    socket.on('chat_message', (msg) => {
+      if (msg.conversationId == currentConversationId) {
+        addMessageToChat(msg);
+      }
+    });
+  
+
+  
+    window.sendMessageUI = function() {
+      const content = document.getElementById('chat-input').value;
+      if (content.trim()) {
+        socket.emit('chat_message', {
+          conversationId,
+          senderId: localStorage.getItem('userId'), 
+          content
+        });
+        document.getElementById('chat-input').value = '';
+      }
+    };
+  }
+
+  export function closeChat() {
+    document.getElementById('chat-modal').style.display = 'none';
+    if (socket && currentConversationId) {
+      socket.off('chat_message');
+      socket.emit('leave', currentConversationId);
+    }
+    currentConversationId = null;
+  }
+
+  function addMessageToChat(msg) {
+    const myId = localStorage.getItem('userId');
+    const isMine = (msg.senderId == myId || msg.sender_id == myId);
+    const chatMessages = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    
+    div.className = isMine ? 'my-message' : 'other-message';
+    div.innerHTML = isMine ? `
+      <span class="msg-content">${msg.content || msg.message_content}</span>
+      <br>
+      <span class="msg-time-my">${msg.sent_at ? msg.sent_at : new Date().toLocaleTimeString()}</span>
+    ` : 
+    `
+      <span class="msg-content">${msg.content || msg.message_content}</span>
+      <br>
+      <span class="msg-time-other">${msg.sent_at ? msg.sent_at : new Date().toLocaleTimeString()}</span>
+    `;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  
+
+  export function loadUserConversations() {
+    if (!isLogged()) {
+      navigateTo("login");
+      alert("Você precisa estar logado para ver suas conversas.");
+      //showToast("Atenção", "Você precisa estar logado para ver suas conversas.");
+      return;
+    }
+    $.ajax({
+      url: 'api/chat/get_user_conversations.php',
+      type: 'GET',
+      dataType: 'json',
+      success: function(conversations) {
+        const chatList = document.getElementById('chat-list');
+        chatList.innerHTML = "<h2>Suas conversas</h2>";
+  
+        if (!conversations.length) {
+          chatList.innerHTML += `<p style="text-align:center;margin:40px 0;font-size:1.1em;color:#888;">Nenhuma conversa encontrada.</p>`;
+          return;
+        }
+  
+        console.log("Conversas carregadas:", conversations);
+        conversations.forEach(conv => {
+          console
+          const otherUser = (conv.user1_id == localStorage.getItem("userId")) ? conv.user2_id : conv.user1_id;
+          const div = document.createElement('div');
+          div.className = "chat-item";
+          div.style.cursor = "pointer";
+          div.style.padding = "10px";
+          div.style.borderBottom = "1px solid #eee";
+          div.innerHTML = `
+          <div style="display:inline-block;vertical-align:top;text-align:center;width:70px;padding:0 8px;">
+            <img src="${conv.other_user_product_image}" alt="Produto" style="width:40px;height:40px;object-fit:cover;border-radius:6px;display:block;margin:0 auto;">
+            <div style="font-size:0.85em;color:#888;margin-top:2px;word-break:break-word;">${conv.other_user_product_name}</div>
+          </div>
+          <div style="display:inline-block;vertical-align:top;margin-left:10px;min-width:150px;">
+            <div><strong>${conv.other_user_name}</strong></div>
+            <div style="font-size:0.9em;color:#666;">${conv.other_user_email}</div>
+          </div>
+        `;
+          div.onclick = () => openChat(conv.id);
+          chatList.appendChild(div);
+        });
+      },
+      error: function(xhr, status, error) {
+        alert("Erro ao carregar conversas!");
+        console.error(error);
+      }
     });
   }

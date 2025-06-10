@@ -42,34 +42,67 @@ if ($method === 'POST') {
         $name = $conn->real_escape_string($data['name']);
         $email = $conn->real_escape_string($data['email']);
         $pass = $conn->real_escape_string($data['pass']);
+        $repeat_pass = $conn->real_escape_string($data['repeat_pass'] ?? '');
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            echo json_encode(['success' => false, 'message' => 'E-mail inválido']);
+            exit;
+        }
+        if (empty($name) || strlen($name) < 2) {
+            echo json_encode(['success' => false, 'message' => 'Nome inválido']);
+            exit;
+        }
+        if (strlen($pass) < 6 ||
+            !preg_match('/[a-z]/', $pass) ||
+            !preg_match('/[A-Z]/', $pass) ||
+            !preg_match('/[0-9]/', $pass)) {
+            echo json_encode(['success' => false, 'field' => 'pass', 'message' => 'A senha deve ter ao menos 6 caracteres, incluir letras maiúsculas, minúsculas e números.']);
+            exit;
+        }
+        if ($pass !== $repeat_pass) {
+            echo json_encode(['success' => false, 'message' => 'As senhas não coincidem']);
+            exit;
+        }
+
         $check = $conn->query("SELECT id FROM users WHERE email='$email'");
         if ($check->num_rows > 0) {
             echo json_encode(['success' => false, 'message' => 'Email já cadastrado']);
             exit;
         }
         $code = rand(100000, 999999);
-        $_SESSION['TempUser'] = [
-            'name' => $name,
-            'email' => $email,
-            'pass' => $pass,
-            'code' => $code
-        ];
+
+        $stmt = $conn->prepare("INSERT INTO pending_users (name, email, pass, code) VALUES (?, ?, ?, ?)");
+        $pass = password_hash($pass, PASSWORD_BCRYPT);
+        $stmt->bind_param("sssi", $name, $email, $pass, $code);
+        $stmt->execute();
         sendEmailConfirmation($email, $name, $code);
-        echo json_encode(['success' => true, 'message' => 'verifique seu email']);
+        echo json_encode(['success' => true, 'message' => 'verifique seu email para completar o cadastro']);
         exit;
     }
 
     if($path === '/confirm'){
         $codeInput = $conn->real_escape_string($data['code']);
-        if (!isset($_SESSION['TempUser']) || $codeInput != $_SESSION['TempUser']['code']) {
-            echo json_encode(['success' => false, 'message' => 'Código inválido']);
+
+        $stmt = $conn->prepare("SELECT name, email, pass FROM pending_users WHERE code = ?");
+        $stmt->bind_param("s", $codeInput);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $pendingUser = $result->fetch_assoc();
+
+        if (!$pendingUser) {
+            echo json_encode(['success' => false, 'message' => 'Código inválido ou expirado']);
             exit;
         }
-        $name = $_SESSION['TempUser']['name'];
-        $email = $_SESSION['TempUser']['email'];
-        $pass = password_hash($_SESSION['TempUser']['pass'], PASSWORD_BCRYPT);
-        $conn->query("INSERT INTO users (name, email, pass) VALUES ('$name', '$email', '$pass')");
-        unset($_SESSION['TempUser']);
+
+        $name = $pendingUser['name'];
+        $email = $pendingUser['email'];
+        $pass = $pendingUser['pass'];
+
+        $stmt = $conn->prepare("INSERT INTO users (name, email, pass) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $name, $email, $pass);
+        $stmt->execute();
+        $stmt = $conn->prepare("DELETE FROM pending_users WHERE code = ?");
+        $stmt->bind_param("s", $codeInput);
+        $stmt->execute();
         echo json_encode(['success' => true, 'message' => 'Cadastro realizado com sucesso!']);
         exit;
     }
@@ -77,7 +110,10 @@ if ($method === 'POST') {
     if ($path === '/login') {
         $email = $conn->real_escape_string($data['email']);
         $pass = $conn->real_escape_string($data['pass']);
-        $result = $conn->query("SELECT * FROM users WHERE email='$email'");
+        $result = $conn->prepare("SELECT * FROM users WHERE email=?");
+        $result->bind_param("s", $email);
+        $result->execute();
+        $result = $result->get_result();
         if ($result->num_rows > 0) {
             $user = $result->fetch_assoc();
             if (!password_verify($pass, $user['pass'])) {

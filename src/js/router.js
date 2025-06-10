@@ -1,5 +1,5 @@
 import { getCategories, getMyProducts, getProducts } from "./api.js";
-import { initModalEvents, loadCategories, loadProducts, renderNotifications } from "./ui.js";
+import { initModalEvents, loadCategories, loadProducts, loadUserConversations, renderHomeWithPagination, renderNotifications } from "./ui.js";
 
 export async function navigateTo(page) {
     try {
@@ -11,7 +11,8 @@ export async function navigateTo(page) {
         initModalEvents();
         const products = await getProducts(); 
         const categories = await getCategories();
-        loadProducts(products); 
+        // loadProducts(products); 
+        renderHomeWithPagination(1, 2);
         loadCategories(categories);
       }
       if( page === "products") {
@@ -20,6 +21,9 @@ export async function navigateTo(page) {
       }
       if (page === "notifications") {
         renderNotifications();
+      }
+      if (page === "chat") {
+        loadUserConversations();
       }
     } catch (error) {
       document.getElementById("content").innerHTML = "<h1>Página não encontrada</h1>";
