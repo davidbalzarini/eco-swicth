@@ -42,6 +42,74 @@ INSERT INTO `category` VALUES (1,'casa e lazer'),(2,'vestimenta');
 UNLOCK TABLES;
 
 --
+-- Table structure for table `chat_messages`
+--
+
+DROP TABLE IF EXISTS `chat_messages`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `chat_messages` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `conversation_id` int NOT NULL,
+  `sender_id` int NOT NULL,
+  `message_content` text NOT NULL,
+  `sent_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `is_read` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `conversation_id` (`conversation_id`),
+  KEY `sender_id` (`sender_id`),
+  CONSTRAINT `chat_messages_ibfk_1` FOREIGN KEY (`conversation_id`) REFERENCES `conversations` (`id`),
+  CONSTRAINT `chat_messages_ibfk_2` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=62 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `chat_messages`
+--
+
+LOCK TABLES `chat_messages` WRITE;
+/*!40000 ALTER TABLE `chat_messages` DISABLE KEYS */;
+INSERT INTO `chat_messages` VALUES (51,23,14,'teste','2025-06-10 00:18:48',0);
+/*!40000 ALTER TABLE `chat_messages` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `conversations`
+--
+
+DROP TABLE IF EXISTS `conversations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `conversations` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `trade_id` int NOT NULL,
+  `user1_id` int NOT NULL,
+  `user2_id` int NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `last_message_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `concluido_user1` tinyint(1) DEFAULT '0',
+  `concluido_user2` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `trade_id` (`trade_id`),
+  KEY `user1_id` (`user1_id`),
+  KEY `user2_id` (`user2_id`),
+  CONSTRAINT `conversations_ibfk_1` FOREIGN KEY (`trade_id`) REFERENCES `requests` (`id`),
+  CONSTRAINT `conversations_ibfk_2` FOREIGN KEY (`user1_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `conversations_ibfk_3` FOREIGN KEY (`user2_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `conversations`
+--
+
+LOCK TABLES `conversations` WRITE;
+/*!40000 ALTER TABLE `conversations` DISABLE KEYS */;
+INSERT INTO `conversations` VALUES (23,68,12,14,'2025-06-09 23:58:17','2025-06-10 00:18:48',0,0);
+/*!40000 ALTER TABLE `conversations` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `feedback`
 --
 
@@ -69,6 +137,34 @@ INSERT INTO `feedback` VALUES (1,1,'Ótima plataforma!'),(2,2,'Gostei da experi�
 UNLOCK TABLES;
 
 --
+-- Table structure for table `pending_users`
+--
+
+DROP TABLE IF EXISTS `pending_users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `pending_users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `pass` varchar(255) NOT NULL,
+  `code` varchar(10) NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pending_users`
+--
+
+LOCK TABLES `pending_users` WRITE;
+/*!40000 ALTER TABLE `pending_users` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pending_users` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `products`
 --
 
@@ -86,7 +182,7 @@ CREATE TABLE `products` (
   KEY `fk_products_category` (`category_id`),
   CONSTRAINT `fk_products_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `products_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -95,7 +191,7 @@ CREATE TABLE `products` (
 
 LOCK TABLES `products` WRITE;
 /*!40000 ALTER TABLE `products` DISABLE KEYS */;
-INSERT INTO `products` VALUES (1,'Cadeira de madeira','https://i.postimg.cc/x1HwBGVt/item.png',1,NULL),(2,'Mesa de escritório','https://toribio.com.br/controle/arquivo/p12a-br.jpg',2,NULL),(3,'S9 quebrado','https://th.bing.com/th/id/OIP.e6ER8nfBUcDmVH4TUpfxIAHaFj?rs=1&pid=ImgDetMain',3,NULL),(9,'Opala 4.1','https://ichef.bbci.co.uk/ace/standard/976/cpsprodpb/d062/live/0eb4dcb0-0572-11f0-a165-4b63c0a4f6f3.jpg.webp',12,2);
+INSERT INTO `products` VALUES (1,'Cadeira de madeira','https://i.postimg.cc/x1HwBGVt/item.png',1,NULL),(2,'Mesa de escritório','https://toribio.com.br/controle/arquivo/p12a-br.jpg',2,NULL),(3,'S9 quebrado','https://th.bing.com/th/id/OIP.e6ER8nfBUcDmVH4TUpfxIAHaFj?rs=1&pid=ImgDetMain',3,NULL),(9,'Opala 4.1','https://ichef.bbci.co.uk/ace/standard/976/cpsprodpb/d062/live/0eb4dcb0-0572-11f0-a165-4b63c0a4f6f3.jpg.webp',12,2),(11,'zé colmeia','https://i.ytimg.com/vi/xwdk8wd3YhI/hqdefault.jpg',12,1),(22,'teste','images/22.png',14,1);
 /*!40000 ALTER TABLE `products` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -112,12 +208,13 @@ CREATE TABLE `requests` (
   `requester_id` int DEFAULT NULL,
   `status` varchar(50) DEFAULT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `product_requester_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `product_id` (`product_id`),
   KEY `requester_id` (`requester_id`),
   CONSTRAINT `requests_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   CONSTRAINT `requests_ibfk_2` FOREIGN KEY (`requester_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=72 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -126,6 +223,7 @@ CREATE TABLE `requests` (
 
 LOCK TABLES `requests` WRITE;
 /*!40000 ALTER TABLE `requests` DISABLE KEYS */;
+INSERT INTO `requests` VALUES (68,11,14,'accepted','2025-06-09 23:58:13',12);
 /*!40000 ALTER TABLE `requests` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -144,7 +242,7 @@ CREATE TABLE `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`),
   UNIQUE KEY `uc_email_unico` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -153,7 +251,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'Maria Oliveira','maria@gmail.com','1234'),(2,'João Silva','joao@gmail.com','abcd'),(3,'Ana Souza','ana@gmail.com','senha123'),(12,'David','davidpereira2302@gmail.com','$2y$12$BTr2YH2FEszc2tN2gAzCyOync7O7pX9v8hp5wY1Zz3kuF7a1zYHT.'),(14,'David','davidbalzarinipereira@gmail.com','$2y$12$FcsAcoaF9.7dqWHN08tGo..mUTGR70epO/KC7Tmt879hmpXTIRZW2');
+INSERT INTO `users` VALUES (1,'Maria Oliveira','maria@gmail.com','1234'),(2,'João Silva','joao@gmail.com','abcd'),(3,'Ana Souza','ana@gmail.com','senha123'),(12,'David','davidpereira2302@gmail.com','$2y$12$BTr2YH2FEszc2tN2gAzCyOync7O7pX9v8hp5wY1Zz3kuF7a1zYHT.'),(14,'David','davidbalzarinipereira@gmail.com','$2y$12$FcsAcoaF9.7dqWHN08tGo..mUTGR70epO/KC7Tmt879hmpXTIRZW2'),(18,'Gianne Balzarini Pereira','giannepaola@gmail.com','$2y$12$Wyj1D5bYCIXE2CzhtbnkxOqqYoVOIBqmiGwvJEMg.WwAwk0Nv1PFS');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -166,4 +264,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-30 13:58:04
+-- Dump completed on 2025-06-09 23:42:17
