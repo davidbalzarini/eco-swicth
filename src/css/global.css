@@ -75,3 +75,9 @@ button {
         padding: 5px 10px;
     }
 }
+
+@media (max-width: 366px) {
+    .btn-outline{
+        display: none !important;
+    }
+}

@@ -1,5 +1,5 @@
 import { setLogged } from "./state.js";
-import { closeChat, loadProducts, loadUserConversations, openChat } from "./ui.js";
+import { closeChat, loadProducts, loadUserConversations, openChat, renderHomeWithPagination } from "./ui.js";
 
 let products = []
 
@@ -15,16 +15,16 @@ export async function loginUser(email, password) {
     }),
     success: function(response) {
       if (response.success) {
-        console.log(response);
-       // alert(response.message);
-        //showToast("Sucesso", response.message);
-      
+        localStorage.setItem("userId", response.user.id);
+        localStorage.setItem("userName", response.user.name);
+        localStorage.setItem("userEmail", response.user.email);
+        
         setLogged(true);
         navigateTo("home");
+        
       } else {
-        //showToast("Erro", "Email ou senha inválidos");
-        alert("Email ou senha inválidos");
-
+        alert("Credenciais inválidas!");
+        //showToast("Erro", "Credenciais inválidas!");
       }
     },
   })

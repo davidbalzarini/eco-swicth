@@ -672,9 +672,23 @@ export async function renderNotifications() {
       }
     });
     if (!socket) {
-      socket = io('http://localhost:3001');
-      socket.on('connect', () => console.log('Conectado ao servidor de chat'));
-      socket.on('connect_error', (err) => console.error('Erro de conexão:', err));
+      const isProduction = window.location.hostname !== 'localhost';
+      const socketUrl = isProduction 
+        ? `http://${window.location.hostname}:3001` 
+        : 'http://localhost:3001';
+        
+      console.log(`Conectando ao servidor de chat em: ${socketUrl}`);
+      
+      socket = io(socketUrl);
+      
+      socket.on('connect', () => {
+        console.log('Conectado ao servidor de chat');
+      });
+      
+      socket.on('connect_error', (err) => {
+        console.error('Erro de conexão:', err);
+        console.error('Detalhes:', JSON.stringify(err));
+      });
     }
 
 

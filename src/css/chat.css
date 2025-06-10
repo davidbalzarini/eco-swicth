@@ -138,7 +138,7 @@
   @media (max-width: 480px) {
     #chat-modal > div {
       min-width: 95vw;
-      min-height: 98vh;
+      min-height: 85vh;
       padding: 8px 4vw;
     }
     #chat-input {
