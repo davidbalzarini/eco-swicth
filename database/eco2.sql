@@ -1,8 +1,8 @@
---CREATE DATABASE  IF NOT EXISTS `ecoswitch` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `ecoswitch`;
+CREATE DATABASE  IF NOT EXISTS `ecos` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `ecos`;
 -- MySQL dump 10.13  Distrib 8.0.31, for Win64 (x86_64)
 --
--- Host: localhost    Database: ecoswitch
+-- Host: localhost    Database: eco
 -- ------------------------------------------------------
 -- Server version	8.0.31
 
@@ -37,7 +37,7 @@ CREATE TABLE `category` (
 
 LOCK TABLES `category` WRITE;
 /*!40000 ALTER TABLE `category` DISABLE KEYS */;
-INSERT INTO `category` VALUES (1,'casa e lazer'),(2,'vestimenta');
+INSERT INTO `category` VALUES (1,'casa e lazer'),(2,'vestimenta'),(3,'Eletrônicos'),(4,'Esportes e Fitness'),(5,'Livros e Mídia'),(6,'Móveis e Decoração'),(7,'Veículos e Acessórios'),(8,'Brinquedos e Jogos');
 /*!40000 ALTER TABLE `category` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -69,7 +69,7 @@ CREATE TABLE `chat_messages` (
 
 LOCK TABLES `chat_messages` WRITE;
 /*!40000 ALTER TABLE `chat_messages` DISABLE KEYS */;
-INSERT INTO `chat_messages` VALUES (51,23,14,'teste','2025-06-10 00:18:48',0);
+-- INSERT INTO `chat_messages` VALUES (51,23,14,'teste','2025-06-10 00:18:48',0);
 /*!40000 ALTER TABLE `chat_messages` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -105,7 +105,7 @@ CREATE TABLE `conversations` (
 
 LOCK TABLES `conversations` WRITE;
 /*!40000 ALTER TABLE `conversations` DISABLE KEYS */;
-INSERT INTO `conversations` VALUES (23,68,12,14,'2025-06-09 23:58:17','2025-06-10 00:18:48',0,0);
+-- INSERT INTO `conversations` VALUES (23,68,12,14,'2025-06-09 23:58:17','2025-06-10 00:18:48',0,0);
 /*!40000 ALTER TABLE `conversations` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -132,7 +132,7 @@ CREATE TABLE `feedback` (
 
 LOCK TABLES `feedback` WRITE;
 /*!40000 ALTER TABLE `feedback` DISABLE KEYS */;
-INSERT INTO `feedback` VALUES (1,1,'Ótima plataforma!'),(2,2,'Gostei da experiência de troca.'),(3,3,'Fácil de usar e muito útil.');
+-- INSERT INTO `feedback` VALUES (1,1,'Ótima plataforma!'),(2,2,'Gostei da experiência de troca.'),(3,3,'Fácil de usar e muito útil.');
 /*!40000 ALTER TABLE `feedback` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -191,7 +191,14 @@ CREATE TABLE `products` (
 
 LOCK TABLES `products` WRITE;
 /*!40000 ALTER TABLE `products` DISABLE KEYS */;
-INSERT INTO `products` VALUES (1,'Cadeira de madeira','https://i.postimg.cc/x1HwBGVt/item.png',1,NULL),(2,'Mesa de escritório','https://toribio.com.br/controle/arquivo/p12a-br.jpg',2,NULL),(3,'S9 quebrado','https://th.bing.com/th/id/OIP.e6ER8nfBUcDmVH4TUpfxIAHaFj?rs=1&pid=ImgDetMain',3,NULL),(9,'Opala 4.1','https://ichef.bbci.co.uk/ace/standard/976/cpsprodpb/d062/live/0eb4dcb0-0572-11f0-a165-4b63c0a4f6f3.jpg.webp',12,2),(11,'zé colmeia','https://i.ytimg.com/vi/xwdk8wd3YhI/hqdefault.jpg',12,1),(22,'teste','images/22.png',14,1);
+INSERT INTO `products` VALUES (1,'Cadeira de madeira','https://i.postimg.cc/x1HwBGVt/item.png',1, 6),(2,'Mesa de escritório','https://toribio.com.br/controle/arquivo/p12a-br.jpg',2,6),(3,'S9 quebrado','https://th.bing.com/th/id/OIP.e6ER8nfBUcDmVH4TUpfxIAHaFj?rs=1&pid=ImgDetMain',1,3),(4,'Opala 4.1','https://ichef.bbci.co.uk/ace/standard/976/cpsprodpb/d062/live/0eb4dcb0-0572-11f0-a165-4b63c0a4f6f3.jpg.webp',1,7);
+INSERT INTO `products` (`id`, `name`, `image`, `user_id`, `category_id`) VALUES
+(5, 'Monitor Ultrawide 29"', 'https://images-na.ssl-images-amazon.com/images/I/61HAFaB4vUL._AC_SL1500_.jpg', 1, 3),
+(6, 'Cadeira Gamer', 'https://images.kabum.com.br/produtos/fotos/102787/cadeira-gamer-alpha-gamer-astra-preto_1564426578_g.jpg', 1, 6),
+(7, 'Halteres 10kg (Par)', 'https://a-static.mlcdn.com.br/800x560/halteres-emborrachado-10kg-par-anilhas-e-cia/anilhascia/15967008169/0719876251c6b1b5906f0b094857795b.jpeg', 1, 4),
+(8, 'Fone de Ouvido Bluetooth', 'https://images.tcdn.com.br/img/img_prod/703669/fone_de_ouvido_bluetooth_sem_fio_i12_tws_touch_com_case_carregadora_para_android_e_ios_preto_431_1_20200508170828.jpg', 2, 3),
+(9, 'Violão Acústico', 'https://img.irroba.com.br/fit-in/600x600/filters:fill(fff):quality(80)/topmusi/catalog/violao/tagima/dallas/violao-tagima-dallas-bk-preto-eletrico-aco-afinador-1.png', 2, 1),
+(10, 'Tênis de Corrida', 'https://static.netshoes.com.br/produtos/tenis-olympikus-corre-3-masculino/06/2I2-6527-006/2I2-6527-006_zoom1.jpg', 2, 2);
 /*!40000 ALTER TABLE `products` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -223,7 +230,7 @@ CREATE TABLE `requests` (
 
 LOCK TABLES `requests` WRITE;
 /*!40000 ALTER TABLE `requests` DISABLE KEYS */;
-INSERT INTO `requests` VALUES (68,11,14,'accepted','2025-06-09 23:58:13',12);
+-- INSERT INTO `requests` VALUES (68,11,14,'accepted','2025-06-09 23:58:13',12);
 /*!40000 ALTER TABLE `requests` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -251,7 +258,8 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'Maria Oliveira','maria@gmail.com','1234'),(2,'João Silva','joao@gmail.com','abcd'),(3,'Ana Souza','ana@gmail.com','senha123'),(12,'David','davidpereira2302@gmail.com','$2y$12$BTr2YH2FEszc2tN2gAzCyOync7O7pX9v8hp5wY1Zz3kuF7a1zYHT.'),(14,'David','davidbalzarinipereira@gmail.com','$2y$12$FcsAcoaF9.7dqWHN08tGo..mUTGR70epO/KC7Tmt879hmpXTIRZW2'),(18,'Gianne Balzarini Pereira','giannepaola@gmail.com','$2y$12$Wyj1D5bYCIXE2CzhtbnkxOqqYoVOIBqmiGwvJEMg.WwAwk0Nv1PFS');
+INSERT INTO `users` VALUES (1, 'Marcio Belo', 'marcio@belo.com', '$2y$10$e5tz66WD6tDrqZt2Fc8youWatK3MsdQHdR9YIsBBsE/VGOW.xkFPy'), (2, 'Jamille', 'jamille@gmail.com', '$2y$10$kuIS6YanwXiv7snImSXVaO8Rmk6ry83j7927z3cQrYiuXaUinvj1W');
+-- belo: Patasdegalinha1   jamille: jamillepass
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
