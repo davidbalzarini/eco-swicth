@@ -1,10 +1,11 @@
+-- logins: marcio@belo.com : Patasdegalinha1  jamille@gmail.com : jamillepass
 CREATE DATABASE  IF NOT EXISTS `ecos` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `ecos`;
 -- MySQL dump 10.13  Distrib 8.0.31, for Win64 (x86_64)
 --
--- Host: localhost    Database: eco
+-- Host: ec2-18-230-76-195.sa-east-1.compute.amazonaws.com    Database: ecos
 -- ------------------------------------------------------
--- Server version	8.0.31
+-- Server version	8.0.42
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -28,7 +29,7 @@ CREATE TABLE `category` (
   `id` int NOT NULL AUTO_INCREMENT,
   `descricao` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -69,7 +70,6 @@ CREATE TABLE `chat_messages` (
 
 LOCK TABLES `chat_messages` WRITE;
 /*!40000 ALTER TABLE `chat_messages` DISABLE KEYS */;
--- INSERT INTO `chat_messages` VALUES (51,23,14,'teste','2025-06-10 00:18:48',0);
 /*!40000 ALTER TABLE `chat_messages` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -105,7 +105,6 @@ CREATE TABLE `conversations` (
 
 LOCK TABLES `conversations` WRITE;
 /*!40000 ALTER TABLE `conversations` DISABLE KEYS */;
--- INSERT INTO `conversations` VALUES (23,68,12,14,'2025-06-09 23:58:17','2025-06-10 00:18:48',0,0);
 /*!40000 ALTER TABLE `conversations` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -132,7 +131,6 @@ CREATE TABLE `feedback` (
 
 LOCK TABLES `feedback` WRITE;
 /*!40000 ALTER TABLE `feedback` DISABLE KEYS */;
--- INSERT INTO `feedback` VALUES (1,1,'Ótima plataforma!'),(2,2,'Gostei da experiência de troca.'),(3,3,'Fácil de usar e muito útil.');
 /*!40000 ALTER TABLE `feedback` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -182,7 +180,7 @@ CREATE TABLE `products` (
   KEY `fk_products_category` (`category_id`),
   CONSTRAINT `fk_products_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `products_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -191,14 +189,7 @@ CREATE TABLE `products` (
 
 LOCK TABLES `products` WRITE;
 /*!40000 ALTER TABLE `products` DISABLE KEYS */;
-INSERT INTO `products` VALUES (1,'Cadeira de madeira','https://i.postimg.cc/x1HwBGVt/item.png',1, 6),(2,'Mesa de escritório','https://toribio.com.br/controle/arquivo/p12a-br.jpg',2,6),(3,'S9 quebrado','https://th.bing.com/th/id/OIP.e6ER8nfBUcDmVH4TUpfxIAHaFj?rs=1&pid=ImgDetMain',1,3),(4,'Opala 4.1','https://ichef.bbci.co.uk/ace/standard/976/cpsprodpb/d062/live/0eb4dcb0-0572-11f0-a165-4b63c0a4f6f3.jpg.webp',1,7);
-INSERT INTO `products` (`id`, `name`, `image`, `user_id`, `category_id`) VALUES
-(5, 'Monitor Ultrawide 29"', 'https://images-na.ssl-images-amazon.com/images/I/61HAFaB4vUL._AC_SL1500_.jpg', 1, 3),
-(6, 'Cadeira Gamer', 'https://images.kabum.com.br/produtos/fotos/102787/cadeira-gamer-alpha-gamer-astra-preto_1564426578_g.jpg', 1, 6),
-(7, 'Halteres 10kg (Par)', 'https://a-static.mlcdn.com.br/800x560/halteres-emborrachado-10kg-par-anilhas-e-cia/anilhascia/15967008169/0719876251c6b1b5906f0b094857795b.jpeg', 1, 4),
-(8, 'Fone de Ouvido Bluetooth', 'https://images.tcdn.com.br/img/img_prod/703669/fone_de_ouvido_bluetooth_sem_fio_i12_tws_touch_com_case_carregadora_para_android_e_ios_preto_431_1_20200508170828.jpg', 2, 3),
-(9, 'Violão Acústico', 'https://img.irroba.com.br/fit-in/600x600/filters:fill(fff):quality(80)/topmusi/catalog/violao/tagima/dallas/violao-tagima-dallas-bk-preto-eletrico-aco-afinador-1.png', 2, 1),
-(10, 'Tênis de Corrida', 'https://static.netshoes.com.br/produtos/tenis-olympikus-corre-3-masculino/06/2I2-6527-006/2I2-6527-006_zoom1.jpg', 2, 2);
+INSERT INTO `products` VALUES (1,'Cadeira de madeira','https://i.postimg.cc/x1HwBGVt/item.png',1,6),(2,'Mesa de escritório','https://toribio.com.br/controle/arquivo/p12a-br.jpg',2,6),(3,'S9 quebrado','https://th.bing.com/th/id/OIP.e6ER8nfBUcDmVH4TUpfxIAHaFj?rs=1&pid=ImgDetMain',1,3),(4,'Opala 4.1','https://ichef.bbci.co.uk/ace/standard/976/cpsprodpb/d062/live/0eb4dcb0-0572-11f0-a165-4b63c0a4f6f3.jpg.webp',1,7),(5,'Monitor Ultrawide 29','images/5.jpg',1,3),(6,'Cadeira Gamer','images/6.jpg',1,6),(7,'Halteres 10kg (Par)','images/7.webp',1,4),(8,'Fone de Ouvido Bluetooth','images/8.webp',2,3),(9,'Violão Acústico','images/9.jpg',2,1),(10,'Tênis de Corrida','https://static.netshoes.com.br/produtos/tenis-olympikus-corre-3-masculino/06/2I2-6527-006/2I2-6527-006_zoom1.jpg',2,2);
 /*!40000 ALTER TABLE `products` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -230,7 +221,6 @@ CREATE TABLE `requests` (
 
 LOCK TABLES `requests` WRITE;
 /*!40000 ALTER TABLE `requests` DISABLE KEYS */;
--- INSERT INTO `requests` VALUES (68,11,14,'accepted','2025-06-09 23:58:13',12);
 /*!40000 ALTER TABLE `requests` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -258,8 +248,8 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1, 'Marcio Belo', 'marcio@belo.com', '$2y$10$e5tz66WD6tDrqZt2Fc8youWatK3MsdQHdR9YIsBBsE/VGOW.xkFPy'), (2, 'Jamille', 'jamille@gmail.com', '$2y$10$kuIS6YanwXiv7snImSXVaO8Rmk6ry83j7927z3cQrYiuXaUinvj1W');
--- belo: Patasdegalinha1   jamille: jamillepass
+INSERT INTO `users` VALUES (1,'Marcio Belo','marcio@belo.com','$2y$10$e5tz66WD6tDrqZt2Fc8youWatK3MsdQHdR9YIsBBsE/VGOW.xkFPy'),(2,'Jamille','jamille@gmail.com','$2y$10$kuIS6YanwXiv7snImSXVaO8Rmk6ry83j7927z3cQrYiuXaUinvj1W');
+-- logins: marcio@belo.com : Patasdegalinha1  jamille@gmail.com : jamillepass
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -272,4 +262,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-06-09 23:42:17
+-- Dump completed on 2025-06-10 14:24:00

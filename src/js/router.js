@@ -12,7 +12,7 @@ export async function navigateTo(page) {
         const products = await getProducts(); 
         const categories = await getCategories();
         // loadProducts(products); 
-        renderHomeWithPagination(1, 2);
+        renderHomeWithPagination(1, 5);
         loadCategories(categories);
       }
       if( page === "products") {
