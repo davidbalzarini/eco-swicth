@@ -16,8 +16,9 @@ export async function loginUser(email, password) {
     success: function(response) {
       if (response.success) {
         console.log(response);
-       // alert(response.message);
-        //showToast("Sucesso", response.message);
+        localStorage.setItem("userId", response.user.id);
+        localStorage.setItem("userName", response.user.name);
+        localStorage.setItem("userEmail", response.user.email);
       
         setLogged(true);
         navigateTo("home");
@@ -236,6 +237,27 @@ export function checkLoginStatus() {
   });
 }
 
+export async function batchCheckRequests(productIds) {
+  if (!productIds.length) return {};
+  
+  return new Promise((resolve, reject) => {
+    $.ajax({
+      url: `api/requests.php?batch_check=1`,
+      type: "POST",
+      data: JSON.stringify({ product_ids: productIds }),
+      contentType: "application/json",
+      dataType: "json",
+      xhrFields: { withCredentials: true },
+      success: function(data) {
+        resolve(data.results || {});
+      },
+      error: function() {
+        resolve({});
+      }
+    });
+  });
+}
+
 export function createProduct(formData) {
     $.ajax({
         url: "api/produtos.php",
@@ -265,6 +287,13 @@ export function createProduct(formData) {
 }
 
 export function updateProduct(formData) {
+  console.log("Enviando para atualização:", {
+    id: formData.get('id'),
+    name: formData.get('name'),
+    category_id: formData.get('category_id'),
+    condition_id: formData.get('condition_id'), // Verifique se está presente
+    usage_time: formData.get('usage_time')      // Verifique se está presente
+  });
   $.ajax({
     url: "api/produtos.php",
     type: "POST",
@@ -470,5 +499,28 @@ export async function hasRequested(productId) {
       loadUserConversations();
     } else {
       alert("Erro ao cancelar troca.");
+    }
+  }
+
+  export async function getConditions() {
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        url: "api/conditions.php",
+        type: "GET",
+        dataType: "json",
+        success: resolve,
+        error: reject
+      });
+    });
+  }
+  
+  
+  export async function getConditionById(id) {
+    try {
+      const conditions = await getConditions();
+      return conditions.find(condition => condition.id == id);
+    } catch (error) {
+      console.error("Erro ao buscar condição:", error);
+      return null;
     }
   }

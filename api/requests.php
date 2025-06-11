@@ -23,6 +23,36 @@ if ($method === 'GET' && isset($_GET['product_id'])) {
     exit;
 }
 
+if ($method === 'POST' && isset($_GET['batch_check'])) {
+    if (!isset($_SESSION['user']) || !isset($_SESSION['user']['id'])) {
+      echo json_encode(['success' => false, 'message' => 'Usuário não autenticado']);
+      exit;
+    }
+    
+    $userId = $_SESSION['user']['id'];
+    $data = json_decode(file_get_contents("php://input"), true);
+    $productIds = $data['product_ids'];
+    
+    if (empty($productIds)) {
+      echo json_encode(['success' => true, 'results' => []]);
+      exit;
+    }
+    
+    $results = [];
+    $productIdsString = implode(',', array_map('intval', $productIds));
+    
+    $query = "SELECT product_id FROM requests
+             WHERE product_id IN ($productIdsString) AND requester_id = $userId";
+    $result = $conn->query($query);
+    
+    while ($row = $result->fetch_assoc()) {
+      $results[$row['product_id']] = true;
+    }
+    
+    echo json_encode(['success' => true, 'results' => $results]);
+    exit;
+  }
+
 if($method === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
     if (!$data) {

@@ -1,4 +1,4 @@
-import { acceptTrade, cancelarTroca, createProduct, deleteProduct, getCategories, getCategoryById, getMyProducts, getMyProductsPromise, getNotifications, getProducts, getProductsPaginated, hasRequested, marcarTrocaConcluida, switchRequest, updateProduct, updateRequestStatus, getProductById } from "./api.js"; // Add getProductById
+import { acceptTrade, cancelarTroca, createProduct, deleteProduct, getCategories, getCategoryById, getMyProducts, getMyProductsPromise, getNotifications, getProducts, getProductsPaginated, hasRequested, marcarTrocaConcluida, switchRequest, updateProduct, updateRequestStatus, getProductById, getConditions, batchCheckRequests } from "./api.js"; // Add getProductById
 import { navigateTo } from "./router.js";
 import { isLogged } from "./state.js";
 
@@ -99,7 +99,34 @@ export async function loadProducts(list = products, idList = "productList") {
     return;
   }
 
+  let categories;
+  try {
+    categories = await getCategories();
+  } catch (e) {
+    console.error("Erro ao carregar categorias:", e);
+    categories = [];
+  }
   
+  const userId = localStorage.getItem("userId");
+  let requestedProducts = {};
+
+  if (isLogged()) {
+    const otherProductIds = list
+      .filter(item => item.user_id !== userId)
+      .map(item => item.id);
+    
+    if (otherProductIds.length > 0) {
+      try {
+        requestedProducts = await batchCheckRequests(otherProductIds);
+        console.log("Solicitações verificadas em lote:", requestedProducts);
+      } catch (e) {
+        console.error("Erro ao verificar solicitações em lote:", e);
+      }
+    }
+  }
+
+  const fragment = document.createDocumentFragment();
+
   for (const item of list) {
     const productDiv = document.createElement("div");
     productDiv.classList.add("product");
@@ -125,7 +152,7 @@ export async function loadProducts(list = products, idList = "productList") {
     productDiv.appendChild(clickableArea);
     
     try {
-      const category = await getCategoryById(item.category_id);
+      const category = categories.find(cat => cat.id === item.category_id);
       const categoryDiv = document.createElement("p");
       categoryDiv.classList.add("product-category");
       categoryDiv.textContent = category && category.descricao ? category.descricao : "Categoria não encontrada";
@@ -159,13 +186,14 @@ export async function loadProducts(list = products, idList = "productList") {
       buttonsContainer.append(updateButton, deleteButton);
       productDiv.appendChild(buttonsContainer);
       
-    } else if (isLogged()) {
+    } if (isLogged() && item.user_id != userId) {
       const buttonsContainer = document.createElement("div");
       buttonsContainer.classList.add("product-buttons");
       
-      const requested = await hasRequested(item.id);
       const swapButton = document.createElement("button");
       swapButton.classList.add("product-button");
+      
+      const requested = requestedProducts[item.id] === true;
       
       if (requested) {
         swapButton.textContent = "Já solicitado";
@@ -181,18 +209,28 @@ export async function loadProducts(list = products, idList = "productList") {
       buttonsContainer.appendChild(swapButton);
       productDiv.appendChild(buttonsContainer);
     }
+
+    fragment.appendChild(productDiv);
     
-    productList.appendChild(productDiv);
+
   }
+  productList.appendChild(fragment);
 }
 
 export async function renderProductDetail(product) {
+    console.log("Prodtuo:" + product);
     document.getElementById('product-detail-name').textContent = product.name;
-    document.getElementById('product-detail-owner').textContent = "Usuário " + product.user_id; 
+    document.getElementById('product-detail-owner').textContent =" " + product.user_name || "Usuário " + product.user_id;
     document.getElementById('product-detail-image').src = product.image + '?v=' + new Date().getTime();
-    document.getElementById('product-detail-usage-time').textContent = product.tempo_uso || 'Não informado'; 
-    document.getElementById('product-detail-condition').textContent = product.estado || 'Não informado'; 
-    document.getElementById('product-detail-includes').textContent = product.acompanha || 'Não informado';
+    document.getElementById('product-detail-usage-time').textContent = product.usage_time || 'Não informado'; 
+    const conditionEl = document.getElementById('product-detail-condition');
+    if (product.condition_name) {
+      const conditionName = product.condition_name.charAt(0).toUpperCase() + product.condition_name.slice(1);
+      conditionEl.innerHTML = `<span class="condition-tag condition-${product.condition_name}">${conditionName}</span>`;
+    } else {
+      conditionEl.textContent = "Não informado";
+    }
+    //document.getElementById('product-detail-includes').textContent = product.acompanha || 'Não informado';
 
     const requestSwapButton = document.getElementById('request-swap-button');
     if (isLogged()) {
@@ -211,7 +249,7 @@ export async function renderProductDetail(product) {
         else {
             requestSwapButton.textContent = "Solicitar troca";
             requestSwapButton.disabled = false;
-            requestSwapButton.style.backgroundColor = ''; // Reset if previously disabled
+            requestSwapButton.style.backgroundColor = '';
             requestSwapButton.style.cursor = 'pointer';
             requestSwapButton.onclick = () => abrirSwapRequestModal(product.id);
         }
@@ -572,6 +610,14 @@ export async function renderNotifications() {
         <!-- campos -->
         <label>Nome</label><input type="text" id="nome-produto" required>
         <label>Imagem</label><input type="file"  id="imagem-produto" accept="image/*" required>
+
+        <label>Estado de conservação</label>
+        <select id="condicao-produto" required>
+          <option value="">Selecione...</option>
+        </select>
+
+        <label>Tempo de uso</label>
+        <input type="text" id="tempo-uso-produto" placeholder="Ex: 2 anos, 6 meses, etc." >
         <label>Categoria</label>
         <select id="categoria-produto"></select>
         <div class="modal-actions">
@@ -588,17 +634,33 @@ export async function renderNotifications() {
         opt.textContent = cat.descricao;
         select.appendChild(opt);
       });
+
+      const conditions = await getConditions();
+      const conditionSelect = modal.querySelector("#condicao-produto");
+      conditions.forEach(cond => {
+        const opt = document.createElement("option");
+        opt.value = cond.id;
+        opt.textContent = cond.name.charAt(0).toUpperCase() + cond.name.slice(1);
+        conditionSelect.appendChild(opt);
+      });
+
+
       modal.querySelector(".cancel").onclick = closeModal;
       modal.querySelector("#form-anuncio").onsubmit = function(e) {
         e.preventDefault();
         const nome = modal.querySelector("#nome-produto").value;
         const imagemInput = modal.querySelector("#imagem-produto");
         const categoria = modal.querySelector("#categoria-produto").value;
+        const condicao = modal.querySelector("#condicao-produto").value;
+        const tempoUso = modal.querySelector("#tempo-uso-produto").value;
         const userId = localStorage.getItem("userId");
-        
+
+
         const formData = new FormData();
         formData.append("name", nome);
         formData.append("category_id", categoria);
+        formData.append("condition_id", condicao);
+        formData.append("usage_time", tempoUso);
         formData.append("user_id", userId);
         formData.append("image", imagemInput.files[0]);
 
@@ -616,8 +678,20 @@ export async function renderNotifications() {
       <form id="form-anuncio">
         <label>Nome</label><input type="text" id="nome-produto" value="${produto.name}" required>
         <label>Imagem</label><input type="file" id="imagem-produto" accept="image/*">
+        
+        <label>Estado de conservação</label>
+        <select id="condicao-produto" required>
+          <option value="">Selecione...</option>
+        </select>
+        
+        <label>Tempo de uso</label>
+        <input type="text" id="tempo-uso-produto" value="${produto.usage_time || ''}" placeholder="Ex: 2 anos, 6 meses, etc.">
+        
         <label>Categoria</label>
-        <select id="categoria-produto"></select>
+        <select id="categoria-produto" required>
+          <option value="">Selecione...</option>
+        </select>
+        
         <div class="modal-actions">
           <button type="button" class="cancel">Cancelar</button>
           <button type="submit" class="submit">Salvar</button>
@@ -625,25 +699,41 @@ export async function renderNotifications() {
       </form>
     `, async (modal) => {
       const cats = await getCategories();
-      const select = modal.querySelector("#categoria-produto");
+      const categorySelect = modal.querySelector("#categoria-produto");
       cats.forEach(cat => {
         const opt = document.createElement("option");
         opt.value = cat.id;
         opt.textContent = cat.descricao;
         if (cat.id == produto.category_id) opt.selected = true;
-        select.appendChild(opt);
+        categorySelect.appendChild(opt);
       });
+      
+      const conditions = await getConditions();
+      const conditionSelect = modal.querySelector("#condicao-produto");
+      conditions.forEach(cond => {
+        const opt = document.createElement("option");
+        opt.value = cond.id;
+        opt.textContent = cond.name.charAt(0).toUpperCase() + cond.name.slice(1);
+        if (cond.id == produto.condition_id) opt.selected = true;
+        conditionSelect.appendChild(opt);
+      });
+      
       modal.querySelector(".cancel").onclick = closeModal;
       modal.querySelector("#form-anuncio").onsubmit = function(e) {
         e.preventDefault();
         const nome = modal.querySelector("#nome-produto").value;
         const imagemInput = modal.querySelector("#imagem-produto");
         const categoria = modal.querySelector("#categoria-produto").value;
-  
+        const condicao = modal.querySelector("#condicao-produto").value;
+        const tempoUso = modal.querySelector("#tempo-uso-produto").value;
+        
         const formData = new FormData();
         formData.append("id", produto.id);
         formData.append("name", nome);
         formData.append("category_id", categoria);
+        formData.append("condition_id", condicao);
+        formData.append("usage_time", tempoUso);
+        
         if (imagemInput.files.length > 0) {
           formData.append("image", imagemInput.files[0]);
         }
