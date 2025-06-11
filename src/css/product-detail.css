@@ -1,0 +1,151 @@
+.product-detail-container {
+    padding: 20px;
+    background-color: var(--light-color);
+    max-width: 900px;
+    margin: 20px auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.product-header h2 {
+    margin: 0;
+    font-size: 28px;
+    color: var(--primary-color);
+}
+
+.product-owner {
+    font-size: 1.1em;
+    color: #666;
+    display: flex;
+    align-items: center;
+}
+
+.product-owner i {
+    margin-left: 8px;
+    color: #888;
+}
+
+.product-content {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+}
+
+.product-image-gallery {
+    flex: 2;
+    min-width: 300px;
+    text-align: center;
+}
+
+.product-image-gallery img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.image-thumbnails {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.image-thumbnails img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 2px solid #ddd;
+    transition: border-color 0.2s;
+}
+
+.image-thumbnails img.active,
+.image-thumbnails img:hover {
+    border-color: var(--primary-color);
+}
+
+.product-details {
+    flex: 1;
+    min-width: 280px;
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.product-details p {
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    color: #333;
+}
+
+.product-details p strong {
+    color: var(--primary-color);
+}
+
+.product-details .btn-primary {
+    width: 100%;
+    padding: 12px;
+    font-size: 1.1em;
+    margin-top: 20px;
+}
+
+.similar-products-section {
+    margin-top: 40px;
+    text-align: center;
+}
+
+.similar-products-section h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: var(--dark-color);
+}
+
+
+.similar-products-section .products {
+    justify-content: center; 
+}
+
+.product-content-wrapper {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .product-content-wrapper:hover {
+    opacity: 0.9;
+  }
+  
+  .product button {
+    z-index: 10; 
+  }
+
+@media (max-width: 768px) {
+    .product-content {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .product-image-gallery, .product-details {
+        min-width: unset;
+        width: 100%;
+    }
+
+    .product-detail-container {
+        padding: 15px;
+    }
+}

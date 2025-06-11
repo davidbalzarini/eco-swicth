@@ -1,4 +1,5 @@
 <?php
+// eco switch/eco-swicth-main/api/produtos.php
 header('Content-Type: application/json');
 session_start();
 require 'db.php';
@@ -16,6 +17,20 @@ if ($method === 'GET') {
         }
         echo json_encode($produtos);
         exit;
+    }
+
+    if (isset($_GET['id'])) {
+        $id = intval($_GET['id']);
+        $result = $conn->query("SELECT p.*, pc.name as condition_name, u.name as user_name 
+                               FROM products p 
+                               JOIN users u ON p.user_id = u.id 
+                               LEFT JOIN product_conditions pc ON p.condition_id = pc.id 
+                               WHERE p.id=$id");
+        if ($result->num_rows > 0) {
+            $produto = $result->fetch_assoc();
+            echo json_encode($produto);
+            exit;
+        }
     }
 
     // $result = $conn->query("SELECT * FROM products");
@@ -39,15 +54,19 @@ if ($method === 'GET') {
     exit; 
 }
 
+
+
 if ($method === 'POST' && isset($_POST['id'])) {
     $id = intval($_POST['id']);
     $nome = $conn->real_escape_string($_POST['name']);
     $categoria = intval($_POST['category_id']);
     $userId = $_SESSION['user']['id'];
+    $conditionId = intval($_POST['condition_id']);
+    $usageTime = $conn->real_escape_string($_POST['usage_time']);
 
 
-    $stmt = $conn->prepare("UPDATE products SET name=?, category_id=? WHERE id=? AND user_id=?");
-    $stmt->bind_param("siii", $nome, $categoria, $id, $userId);
+    $stmt = $conn->prepare("UPDATE products SET name=?, category_id=?, condition_id=?, usage_time=? WHERE id=? AND user_id=?");
+    $stmt->bind_param("siisii", $nome, $categoria, $conditionId, $usageTime, $id, $userId);
     $stmt->execute();
 
     if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
@@ -70,11 +89,15 @@ if ($method === 'POST') {
     $nome = $conn->real_escape_string($_POST['name']);
     $categoria = intval($_POST['category_id']);
     $userId = $_SESSION['user']['id'];
+    $conditionId = intval($_POST['condition_id']);
+    $usageTime = $conn->real_escape_string($_POST['usage_time']);
 
-    $stmt = $conn->prepare("INSERT INTO products (name, user_id, category_id) VALUES (?, ?, ?)");
-    $stmt->bind_param("sii", $nome, $userId, $categoria);
+    $stmt = $conn->prepare("INSERT INTO products (name, user_id, category_id, condition_id, usage_time) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("siiis", $nome, $userId, $categoria, $conditionId, $usageTime);
     $stmt->execute();
+    $productId = $stmt->insert_id;
     $productId = $conn->insert_id;
+
 
     if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
         $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);

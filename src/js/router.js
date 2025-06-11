@@ -1,7 +1,7 @@
-import { getCategories, getMyProducts, getProducts } from "./api.js";
-import { initModalEvents, loadCategories, loadProducts, loadUserConversations, renderHomeWithPagination, renderNotifications } from "./ui.js";
+import { getCategories, getMyProducts, getProducts, getProductById } from "./api.js";
+import { initModalEvents, loadCategories, loadProducts, loadUserConversations, renderHomeWithPagination, renderNotifications, renderProductDetail } from "./ui.js"; // Add renderProductDetail
 
-export async function navigateTo(page) {
+export async function navigateTo(page, productId = null) {
     try {
       const response = await fetch(`pages/${page}.html`);
       const html = await response.text();
@@ -11,7 +11,7 @@ export async function navigateTo(page) {
         initModalEvents();
         const products = await getProducts(); 
         const categories = await getCategories();
-        // loadProducts(products); 
+         
         renderHomeWithPagination(1, 5);
         loadCategories(categories);
       }
@@ -25,10 +25,23 @@ export async function navigateTo(page) {
       if (page === "chat") {
         loadUserConversations();
       }
+      if (page === "product-detail" && productId) {
+        const product = await getProductById(productId);
+        if (product) {
+            renderProductDetail(product);
+        } else {
+            document.getElementById("content").innerHTML = "<h1>Produto não encontrado</h1>";
+        }
+      }
+
     } catch (error) {
       document.getElementById("content").innerHTML = "<h1>Página não encontrada</h1>";
       console.error("Erro ao carregar a página:", error);
     }
     
-    window.history.pushState({}, "", `/${page}`);
+    if (productId) {
+      window.history.pushState({ productId: productId }, "", `/${page}?id=${productId}`);
+    } else {
+      window.history.pushState({}, "", `/${page}`);
+    }
   }
