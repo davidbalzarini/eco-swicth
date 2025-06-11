@@ -1,0 +1,45 @@
+# Eco Switch
+
+![Logo Eco Switch](https://i.postimg.cc/XNmD3Z8h/icon-logo.png)
+
+## Sobre o Projeto
+
+**Eco Switch** é uma plataforma de economia circular que facilita a troca de produtos entre usuários, promovendo sustentabilidade e reduzindo o consumo excessivo. O projeto foi desenvolvido como parte de um trabalho acadêmico para a disciplina de **3DAW** (Desenvolvimento de Aplicações Web).
+
+## Componentes do Grupo
+
+- David Balzarini Pereira
+- Pedro Heringer Valerio de Souza
+- Pedro do Nascimento Reis
+
+## Funcionalidades Principais
+
+- **Cadastro e Login de Usuários**: Sistema completo de autenticação com confirmação por email
+- **Anúncio de Produtos**: Upload e gerenciamento de produtos para troca
+- **Sistema de Troca**: Interface interativa para solicitações e negociação de trocas
+- **Chat em Tempo Real**: Comunicação direta entre usuários via WebSockets
+- **Notificações**: Alertas sobre solicitações de troca e mensagens
+- **Paginação**: Navegação eficiente por grandes quantidades de produtos
+- **Categorias**: Organização de produtos por categorias para facilitar buscas
+- **Responsividade**: Design adaptativo para diferentes tamanhos de tela
+
+## Tecnologias Utilizadas
+
+### Frontend
+- **HTML5, CSS3, JavaScript**
+- **jQuery**: Manipulação do DOM e requisições AJAX
+- **Socket.io Client**: Comunicação em tempo real para o chat
+- **GSAP**: Animações avançadas para transições
+- **Font Awesome**: Biblioteca de ícones
+
+### Backend
+- **PHP**: Lógica de negócio e API REST
+- **MySQL**: Banco de dados relacional
+- **Node.js**: Servidor de chat em tempo real
+- **Socket.io**: WebSockets para comunicação bidirecional
+- **PHPMailer**: Envio de emails para confirmação de cadastro
+
+### Infraestrutura
+- **AWS EC2**: Hospedagem do servidor PHP e banco de dados MySQL
+- **Apache**: Servidor web
+- **PM2**: Gerenciamento de processos Node.js em produção

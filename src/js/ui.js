@@ -64,11 +64,8 @@ export async function renderHomeWithPagination(page = 1, limit = 12) {
 }
 
 export async function loadProducts(list = products, idList = "productList") {
-
-
   if(idList === "myProductList" && !isLogged()){
     alert("Você precisa estar logado para ver seus produtos.");
-    //showToast("Atenção", "Você precisa estar logado para ver seus produtos.");
     navigateTo("login");
     return;
   }
@@ -79,72 +76,54 @@ export async function loadProducts(list = products, idList = "productList") {
     return;
   }
   productList.innerHTML = "";
+  
   if (idList === "myProductList" && !document.getElementById("buttonContainer")) {
-    const divButton = $('<div>')
-    divButton.attr('id', 'buttonContainer');
-    divButton.addClass("button-container");
-    const criarBtn = $('<button>');
-    criarBtn.attr('id', 'criarAnuncio')
-    criarBtn.text("Criar anúncio");
-    criarBtn.addClass("product-button");
-    criarBtn.click(() => {
-      showCreateProductModal();
-    });
-    divButton.append(criarBtn);
-
-    $("#myProductList").before(divButton);
+    const divButton = document.createElement("div");
+    divButton.id = "buttonContainer";
+    divButton.className = "button-container";
+    
+    const criarBtn = document.createElement("button");
+    criarBtn.id = "criarAnuncio";
+    criarBtn.textContent = "Criar anúncio";
+    criarBtn.onclick = () => showCreateProductModal();
+    
+    divButton.appendChild(criarBtn);
+    document.getElementById("myProductList").parentNode.insertBefore(
+      divButton, 
+      document.getElementById("myProductList")
+    );
   }
+  
   if(list.length === 0){
     productList.innerHTML = "<p>Nenhum produto encontrado.</p>";
     return;
   }
-  
 
+  
   for (const item of list) {
     const productDiv = document.createElement("div");
     productDiv.classList.add("product");
-
+    productDiv.setAttribute("data-product-id", item.id);
+    
+    const clickableArea = document.createElement("div");
+    clickableArea.classList.add("product-clickable-area");
+    clickableArea.onclick = (e) => {
+      e.stopPropagation();
+      navigateTo('product-detail', item.id);
+    };
+    
     const productImg = document.createElement("img");
     productImg.src = item.image + '?v=' + new Date().getTime();
     productImg.alt = item.name;
     productImg.classList.add("product-image");
-
+    
     const productName = document.createElement("p");
     productName.textContent = item.name;
-
-    if (item.user_id === localStorage.getItem("userId")) {
-      const updateButton = document.createElement("button");
-      updateButton.textContent = "Alterar produto";
-      updateButton.classList.add("product-button");
-      updateButton.onclick = () => {
-        showEditProductModal(item);
-      }
-
-      const deleteButton = document.createElement("button");
-      deleteButton.textContent = "Deletar produto";
-      deleteButton.classList.add("product-button");
-      deleteButton.onclick = () => {
-        showDeleteProductModal(item.id);
-      };
-
-      productDiv.append(productImg, productName, updateButton, deleteButton);
-      productList.appendChild(productDiv);
-    } else {
-        const requested = await hasRequested(item.id);
-        const swapButton = document.createElement("button");
-        swapButton.classList.add("product-button");
-        if (requested) {
-        swapButton.textContent = "Já solicitado";
-        swapButton.disabled = true;
-        } else {
-        swapButton.textContent = "Solicitar troca";
-        swapButton.onclick = () => abrirSwapRequestModal(item.id);
-        }
-      productDiv.append(productImg, productName, swapButton);
-      productList.appendChild(productDiv);
-
-    }
-
+    productName.classList.add("product-name");
+    
+    clickableArea.append(productImg, productName);
+    productDiv.appendChild(clickableArea);
+    
     try {
       const category = await getCategoryById(item.category_id);
       const categoryDiv = document.createElement("p");
@@ -157,24 +136,53 @@ export async function loadProducts(list = products, idList = "productList") {
       categoryDiv.textContent = "Categoria não encontrada";
       productDiv.appendChild(categoryDiv);
     }
-  }
-
-    for (const item of list) {
-    const productDiv = document.createElement("div");
-    productDiv.classList.add("product");
-
-    // Add click event to navigate to product-detail page
-    productDiv.onclick = () => navigateTo('product-detail', item.id); // Pass item.id
-
-    const productImg = document.createElement("img");
-    productImg.src = item.image + '?v=' + new Date().getTime();
-    productImg.alt = item.name;
-    productImg.classList.add("product-image");
-
-    const productName = document.createElement("p");
-    productName.textContent = item.name;
-
-  
+    if (item.user_id === localStorage.getItem("userId")) {
+      const buttonsContainer = document.createElement("div");
+      buttonsContainer.classList.add("product-buttons");
+      
+      const updateButton = document.createElement("button");
+      updateButton.textContent = "Alterar produto";
+      updateButton.classList.add("product-button");
+      updateButton.onclick = (e) => {
+        e.stopPropagation();
+        showEditProductModal(item);
+      };
+      
+      const deleteButton = document.createElement("button");
+      deleteButton.textContent = "Deletar produto";
+      deleteButton.classList.add("product-button");
+      deleteButton.onclick = (e) => {
+        e.stopPropagation();
+        showDeleteProductModal(item.id);
+      };
+      
+      buttonsContainer.append(updateButton, deleteButton);
+      productDiv.appendChild(buttonsContainer);
+      
+    } else if (isLogged()) {
+      const buttonsContainer = document.createElement("div");
+      buttonsContainer.classList.add("product-buttons");
+      
+      const requested = await hasRequested(item.id);
+      const swapButton = document.createElement("button");
+      swapButton.classList.add("product-button");
+      
+      if (requested) {
+        swapButton.textContent = "Já solicitado";
+        swapButton.disabled = true;
+      } else {
+        swapButton.textContent = "Solicitar troca";
+        swapButton.onclick = (e) => {
+          e.stopPropagation();
+          abrirSwapRequestModal(item.id);
+        };
+      }
+      
+      buttonsContainer.appendChild(swapButton);
+      productDiv.appendChild(buttonsContainer);
+    }
+    
+    productList.appendChild(productDiv);
   }
 }
 
@@ -215,9 +223,8 @@ export async function renderProductDetail(product) {
     }
 
 
-    // Load similar products (for now, just reuse the home page product loading but exclude the current product)
     const allProducts = await getProducts();
-    const similarProducts = allProducts.products.filter(p => p.id !== product.id).slice(0, 4); // Get up to 4 similar products
+    const similarProducts = allProducts.products.filter(p => p.id !== product.id).slice(0, 4);
     loadProducts(similarProducts, 'similarProductsList');
 }
 
@@ -735,9 +742,23 @@ export async function renderNotifications() {
       }
     });
     if (!socket) {
-      socket = io('http://localhost:3001');
-      socket.on('connect', () => console.log('Conectado ao servidor de chat'));
-      socket.on('connect_error', (err) => console.error('Erro de conexão:', err));
+      const isProduction = window.location.hostname !== 'localhost';
+      const socketUrl = isProduction 
+        ? `http://${window.location.hostname}:3001` 
+        : 'http://localhost:3001';
+        
+      console.log(`Conectando ao servidor de chat em: ${socketUrl}`);
+      
+      socket = io(socketUrl);
+      
+      socket.on('connect', () => {
+        console.log('Conectado ao servidor de chat');
+      });
+      
+      socket.on('connect_error', (err) => {
+        console.error('Erro de conexão:', err);
+        console.error('Detalhes:', JSON.stringify(err));
+      });
     }
 
 

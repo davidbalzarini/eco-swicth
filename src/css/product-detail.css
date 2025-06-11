@@ -118,6 +118,22 @@
     justify-content: center; 
 }
 
+.product-content-wrapper {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .product-content-wrapper:hover {
+    opacity: 0.9;
+  }
+  
+  .product button {
+    z-index: 10; 
+  }
+
 @media (max-width: 768px) {
     .product-content {
         flex-direction: column;
