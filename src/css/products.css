@@ -175,7 +175,6 @@
 @media (max-width: 768px) {
     .product {
         width: 140px;
-        height: 220px;
     }
     
     .product-image {
@@ -186,3 +185,4 @@
         flex-wrap: wrap;
     }
 }
+
