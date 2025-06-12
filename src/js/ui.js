@@ -118,7 +118,6 @@ export async function loadProducts(list = products, idList = "productList") {
     if (otherProductIds.length > 0) {
       try {
         requestedProducts = await batchCheckRequests(otherProductIds);
-        console.log("Solicitações verificadas em lote:", requestedProducts);
       } catch (e) {
         console.error("Erro ao verificar solicitações em lote:", e);
       }
@@ -218,7 +217,6 @@ export async function loadProducts(list = products, idList = "productList") {
 }
 
 export async function renderProductDetail(product) {
-    console.log("Prodtuo:" + product);
     document.getElementById('product-detail-name').textContent = product.name;
     document.getElementById('product-detail-owner').textContent =" " + product.user_name || "Usuário " + product.user_id;
     document.getElementById('product-detail-image').src = product.image + '?v=' + new Date().getTime();
@@ -551,7 +549,6 @@ export async function renderNotifications() {
               await updateRequestStatus(n.request_id, "accepted");
               animarTroca(sides[0]);
               await renderNotifications();
-              console.log("Troca aceita:", data);
               await new Promise(resolve => setTimeout(resolve, 4000));
               if (data && data.conversation_id) {
                 await navigateTo('chat');
@@ -837,7 +834,6 @@ export async function renderNotifications() {
         ? `http://${window.location.hostname}:3001` 
         : 'http://localhost:3001';
         
-      console.log(`Conectando ao servidor de chat em: ${socketUrl}`);
       
       socket = io(socketUrl);
       
@@ -931,7 +927,6 @@ export async function renderNotifications() {
           return;
         }
   
-        console.log("Conversas carregadas:", conversations);
         conversations.forEach(conv => {
           console
           const otherUser = (conv.user1_id == localStorage.getItem("userId")) ? conv.user2_id : conv.user1_id;

@@ -19,7 +19,6 @@ export async function loginUser(email, password) {
         localStorage.setItem("userName", response.user.name);
         localStorage.setItem("userEmail", response.user.email);
         
-        console.log(response);
         localStorage.setItem("userId", response.user.id);
         localStorage.setItem("userName", response.user.name);
         localStorage.setItem("userEmail", response.user.email);
@@ -53,7 +52,6 @@ export async function getCategories(){
       dataType: "json",
       success: function(data) {
         resolve(data);
-        console.log("Categorias carregadas:", data);
       },
       error: function(xhr, status, error) {
         console.error("Erro ao carregar categorias:", error);
@@ -72,7 +70,6 @@ export async function getProducts() {
       success: function(data) {
         products = data;
         resolve(products);
-        console.log("Produtos carregados:", products);
       },
       error: function(xhr, status, error) {
         console.error("Erro ao carregar produtos:", error);
@@ -103,7 +100,6 @@ export async function getProductById(productId) {
       dataType: "json",
       success: function(data) {
         resolve(data);
-        console.log("Produto carregado:", data);
       },
       error: function(xhr, status, error) {
         console.error("Erro ao carregar produto:", error);
@@ -132,7 +128,6 @@ export function confirmResgister(event){
       if (response.success) {
         alert(response.message);
         //showToast("Sucesso", response.message);
-        console.log(response);
         navigateTo("login");
       } else {
         alert("Erro ao confirmar registro. Tente novamente.");
@@ -166,7 +161,6 @@ export function validatePasswords(event) {
       if (response.success) {
         alert(response.message);
         //showToast("Sucesso", response.message);
-        console.log(response);
         navigateTo("confirm-register")
       } else {
         alert(response.message);
@@ -188,7 +182,6 @@ export function getMyProducts() {
     dataType: "json",
     xhrFields: { withCredentials: true },
     success: function(data) {
-      console.log("Meus produtos carregados:", data);
 
       loadProducts(data, "myProductList");
     },
@@ -206,7 +199,6 @@ export async function getCategoryById(category_id){
             dataType: "json",
             success: function(data) {
                 resolve(data);
-                console.log("Categoria carregada:", data);
             },
             error: function(xhr, status, error) {
                 console.error("Erro ao carregar categoria:", error);
@@ -272,7 +264,6 @@ export function createProduct(formData) {
         xhrFields: { withCredentials: true },
         success: function(response) {
             if (response.success) {
-                console.log("Produto criado com sucesso:", response);
                 alert("Produto criado com sucesso!");
                 //showToast("Sucesso", "Produto criado com sucesso!");
                 getMyProducts();
@@ -280,7 +271,6 @@ export function createProduct(formData) {
                 alert("Erro ao criar produto.");
                 //showToast("Erro", "Erro ao criar produto.");
             }
-            console.log(response);
         },
         error: function(xhr, status, error) {
             console.error("Erro ao criar produto:", error);
@@ -291,13 +281,6 @@ export function createProduct(formData) {
 }
 
 export function updateProduct(formData) {
-  console.log("Enviando para atualização:", {
-    id: formData.get('id'),
-    name: formData.get('name'),
-    category_id: formData.get('category_id'),
-    condition_id: formData.get('condition_id'), // Verifique se está presente
-    usage_time: formData.get('usage_time')      // Verifique se está presente
-  });
   $.ajax({
     url: "api/produtos.php",
     type: "POST",
@@ -328,7 +311,6 @@ export function deleteProduct(productId) {
         xhrFields: { withCredentials: true },
         success: function(response) {
         if (response.success) {
-            console.log("Produto deletado com sucesso:", response);
             alert("Produto deletado com sucesso!");
             //showToast("Sucesso", "Produto deletado com sucesso!");
             getMyProducts();
@@ -353,7 +335,6 @@ export function logout(){
         xhrFields: { withCredentials: true },
         success: function(response) {
             if (response.success) {
-                console.log("Usuário deslogado com sucesso:", response);
                 setLogged(false);
                 localStorage.removeItem("userId");
                 navigateTo("home");
@@ -397,7 +378,6 @@ export function switchRequest(productId, productRequesterId){
         }),
         success: function(response) {
             if (response.success) {
-                console.log("Requisição switch bem sucedida:", response);
                 alert("Requisição switch bem sucedida!");
                 //showToast("Sucesso", "Requisição switch bem sucedida!");
                 navigateTo("home");
@@ -405,7 +385,6 @@ export function switchRequest(productId, productRequesterId){
                 alert("Erro ao realizar requisição switch.");
                 //showToast("Erro", "Erro ao realizar requisição switch.");
             }
-            console.log(response)
         },
         
         error: function(xhr, status, error) {

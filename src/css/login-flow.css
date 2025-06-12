@@ -1,4 +1,4 @@
-.btn-outline {
+.btn-outline-2 {
     background: none;
     border: 1px solid var(--primary-color);
     padding: 6px 12px;
@@ -77,7 +77,7 @@ input {
 
 @media (max-width: 768px) {
 
-    .btn-outline, .btn-primary {
+    .btn-outline-2, .btn-primary {
         font-size: 12px;
         padding: 5px 10px;
     }
@@ -88,5 +88,19 @@ input {
 
     .login-banner {
         display: none;
+    }
+}
+
+@media (max-width: 367px){
+    .buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+    .login-box {
+        padding: 20px;
+    }
+
+    .btn-outline-2{
+        display: block !important;
     }
 }
